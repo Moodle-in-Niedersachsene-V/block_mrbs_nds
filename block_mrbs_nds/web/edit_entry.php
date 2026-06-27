@@ -532,7 +532,9 @@ if (has_capability("block/mrbs_nds:forcebook", $context)) {
             <?php
             // select the rooms in the area determined above
             //$sql = "select id, room_name from $tbl_room where area_id=$area_id order by room_name";
-            $rooms = $DB->get_records('block_mrbs_nds_room', ['area_id' => $area_id], 'room_name');
+            // Use URL $area param if provided, otherwise fall back to $area_id.
+            $room_area = ($area > 0) ? $area : $area_id;
+            $rooms = $DB->get_records('block_mrbs_nds_room', ['area_id' => $room_area], 'room_name');
             
             $i = 0;
             foreach ($rooms as $dbroom) {
@@ -581,8 +583,9 @@ if (has_capability("block/mrbs_nds:forcebook", $context)) {
                         if (has_capability('block/mrbs_nds:editmrbs_unconfirmed', $context, null, false)) {
                             $unconfirmed = true;
                         }
-                        if (authGetUserLevel(getUserName()) < 2 && $unconfirmed) {
-                            if ($USER->email != $rooms[$room_id]->room_admin_email) {
+                        if (authGetUserLevel(getUserID()) < 2 && $unconfirmed) {
+                            $curroom = $rooms[$room_id] ?? null;
+                if (!$curroom || $USER->email != $curroom->room_admin_email) {
                                 $type = 'U';
                                 $unconfirmedonly = true;
                             }

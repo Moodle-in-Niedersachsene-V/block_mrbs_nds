@@ -98,15 +98,18 @@ foreach ($mail_settings as $const => $val) {
 }
 
 // ── Booking type labels ───────────────────────────────────────────────────────
-// Types A–J come from admin settings (entry_type_a … entry_type_j).
-// K, L come from import; U = unconfirmed booking.
+// Types A–J from admin settings; fallback defaults used until admin saves settings.
+$type_defaults = [
+    'a' => 'Hausaufgaben',   'b' => 'Klassenarbeiten', 'c' => 'EDV-Unterricht',
+    'd' => 'Fachunterricht', 'e' => 'Extern',          'f' => 'Projektunterricht',
+    'g' => 'Differenzierung','h' => 'AG',               'i' => 'Intern',
+    'j' => 'Vertretung',
+];
 $typel = [];
-foreach (['a','b','c','d','e','f','g','h','i','j'] as $lc) {
+foreach ($type_defaults as $lc => $default) {
     $key = 'entry_type_' . $lc;
-    $val = $cfg_mrbs_nds->$key ?? '';
-    if ($val !== '') {
-        $typel[strtoupper($lc)] = $val;
-    }
+    $val = (!empty($cfg_mrbs_nds->$key)) ? $cfg_mrbs_nds->$key : $default;
+    $typel[strtoupper($lc)] = $val;
 }
 if (!empty($cfg_mrbs_nds->enable_periods)) {
     $typel['K'] = get_string('importedbooking',      'block_mrbs_nds');
