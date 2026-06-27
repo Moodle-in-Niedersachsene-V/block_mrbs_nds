@@ -181,7 +181,7 @@ if ($room <= 0) {
 }
 
 // Show area and room:
-echo "<h2 align=center>$this_area_name - $this_room_name ($this_room_description)</h2>\n";
+echo '<h2 class="mrbs-page-title text-center">' . s($this_area_name) . ' – ' . s($this_room_name) . ($this_room_description ? ' (' . s($this_room_description) . ')' : '') . "</h2>\n";
 
 //y? are year, month and day of the previous week.
 //t? are year, month and day of the next week.

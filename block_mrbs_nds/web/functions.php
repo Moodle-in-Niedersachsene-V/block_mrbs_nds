@@ -41,8 +41,7 @@ function print_header_mrbs_nds(
 ): void {
     global $OUTPUT, $PAGE, $USER, $CFG, $search_str, $locale_warning, $pview;
 
-    // Phase 1: underscore, not slash.
-    $cfg = get_config('block_mrbs_nds');
+    $cfg   = get_config('block_mrbs_nds');
     $title = get_string('blockname', 'block_mrbs_nds');
 
     if (!get_site()) {
@@ -55,7 +54,6 @@ function print_header_mrbs_nds(
     $day   = $day   ?: (int) date('d');
     $month = $month ?: (int) date('m');
     $year  = $year  ?: (int) date('Y');
-
     $search_str = $search_str ?? '';
 
     $PAGE->set_context($context);
@@ -64,19 +62,14 @@ function print_header_mrbs_nds(
     $PAGE->set_title($title);
     $PAGE->set_heading(format_string($title));
 
-    // Phase 2: AMD module instead of plain JS file.
     $PAGE->requires->js_call_amd('block_mrbs_nds/dateselector', 'init', [
-        get_string('mon', 'calendar'),
-        get_string('tue', 'calendar'),
-        get_string('wed', 'calendar'),
-        get_string('thu', 'calendar'),
-        get_string('fri', 'calendar'),
-        get_string('sat', 'calendar'),
+        get_string('mon', 'calendar'), get_string('tue', 'calendar'),
+        get_string('wed', 'calendar'), get_string('thu', 'calendar'),
+        get_string('fri', 'calendar'), get_string('sat', 'calendar'),
         get_string('sun', 'calendar'),
     ]);
 
     echo $OUTPUT->header();
-
     echo '<div id="mrbs_nds_container">';
 
     if ($pview == 1) {
@@ -87,88 +80,100 @@ function print_header_mrbs_nds(
         echo $OUTPUT->notification(s($locale_warning), 'warning');
     }
 
-    $homeurl       = new moodle_url('/blocks/mrbs_nds/web/index.php');
-    $gotourl       = new moodle_url($userview
-        ? '/blocks/mrbs_nds/web/userweek.php'
-        : '/blocks/mrbs_nds/web/day.php');
-    $roomsearchurl = new moodle_url('/blocks/mrbs_nds/web/roomsearch.php');
-    $helpurl       = new moodle_url('/blocks/mrbs_nds/web/help.php',
-                         ['day' => $day, 'month' => $month, 'year' => $year]);
-    $adminurl      = new moodle_url('/blocks/mrbs_nds/web/admin.php',
-                         ['day' => $day, 'month' => $month, 'year' => $year]);
-    $reporturl     = new moodle_url('/blocks/mrbs_nds/web/report.php');
-    $searchurl     = new moodle_url('/blocks/mrbs_nds/web/search.php');
-    $searchadvurl  = new moodle_url($searchurl, ['advanced' => 1]);
-    $editurl       = new moodle_url('/blocks/mrbs_nds/web/edit_entry.php');
+    $homeurl    = new moodle_url('/blocks/mrbs_nds/web/index.php');
+    $dayurl     = new moodle_url('/blocks/mrbs_nds/web/day.php',
+                     ['day' => $day, 'month' => $month, 'year' => $year]);
+    $weekurl    = new moodle_url('/blocks/mrbs_nds/web/week.php',
+                     ['day' => $day, 'month' => $month, 'year' => $year]);
+    $monthurl2  = new moodle_url('/blocks/mrbs_nds/web/month.php',
+                     ['month' => $month, 'year' => $year]);
+    $userwkurl  = new moodle_url('/blocks/mrbs_nds/web/userweek.php',
+                     ['day' => $day, 'month' => $month, 'year' => $year]);
+    $searchurl  = new moodle_url('/blocks/mrbs_nds/web/search.php');
+    $reporturl  = new moodle_url('/blocks/mrbs_nds/web/report.php');
+    $adminurl   = new moodle_url('/blocks/mrbs_nds/web/admin.php',
+                     ['day' => $day, 'month' => $month, 'year' => $year]);
+    $helpurl    = new moodle_url('/blocks/mrbs_nds/web/help.php',
+                     ['day' => $day, 'month' => $month, 'year' => $year]);
+    $editurl    = new moodle_url('/blocks/mrbs_nds/web/edit_entry.php',
+                     ['day' => $day, 'month' => $month, 'year' => $year]);
 
-    $level    = authGetUserLevel($USER->id);
-    $canadmin = ($level >= 2);
+    $level       = authGetUserLevel($USER->id);
+    $canadmin    = ($level >= 2);
     $currentpage = basename($_SERVER['PHP_SELF']);
 
-    // Phase 2: Bootstrap 5 nav instead of HTML table.
-    echo '<nav class="navbar navbar-expand-md navbar-light bg-light mb-3 border rounded">';
-    echo '<div class="container-fluid flex-wrap gap-2">';
+    // Prev / next day links.
+    $prev = mktime(0, 0, 0, $month, $day - 1, $year);
+    $next = mktime(0, 0, 0, $month, $day + 1, $year);
+    $prevparams = ['day' => (int)date('d',$prev), 'month' => (int)date('m',$prev), 'year' => (int)date('Y',$prev)];
+    $nextparams = ['day' => (int)date('d',$next), 'month' => (int)date('m',$next), 'year' => (int)date('Y',$next)];
+    if ($area) { $prevparams['area'] = $area; $nextparams['area'] = $area; }
 
-    // Brand / home link.
-    echo '<a class="navbar-brand fw-bold" href="' . s($homeurl) . '">'
+    $datestr = userdate(mktime(0, 0, 0, $month, $day, $year),
+                        get_string('strftimedaydate', 'langconfig'));
+
+    // ── Navigation bar ────────────────────────────────────────────────────
+    echo '<div class="mrbs-nav">';
+    echo '<a class="mrbs-nav-title" href="' . s($homeurl) . '">'
          . s(get_string('mrbs_nds', 'block_mrbs_nds')) . '</a>';
 
-    // Date-goto form.
-    echo '<form class="d-flex align-items-center gap-1 me-2" action="' . s($gotourl) . '" method="get" name="form_mrbs_goto">';
-    genDateSelector('', $day, $month, $year);
-    if (!empty($area)) {
-        echo '<input type="hidden" name="area" value="' . (int) $area . '">';
+    // Tabs
+    echo '<div class="mrbs-tabs">';
+    $tabs = [
+        'day.php'      => [$dayurl,    get_string('viewday',   'block_mrbs_nds')],
+        'week.php'     => [$weekurl,   get_string('viewweek',  'block_mrbs_nds')],
+        'month.php'    => [$monthurl2, get_string('viewmonth', 'block_mrbs_nds')],
+        'report.php'   => [$reporturl, get_string('report')],
+        'search.php'   => [$searchurl, get_string('search')],
+        'roomsearch.php' => [new moodle_url('/blocks/mrbs_nds/web/roomsearch.php'),
+                             get_string('roomsearch', 'block_mrbs_nds')],
+    ];
+    if ($canadmin) {
+        $tabs['admin.php'] = [$adminurl, get_string('admin')];
     }
-    echo '<button type="submit" class="btn btn-sm btn-secondary">'
-         . s(get_string('goto', 'block_mrbs_nds')) . '</button>';
-    echo '</form>';
+    $tabs['help.php'] = [$helpurl, get_string('help')];
 
-    if (!$userview) {
-        // Add entry.
-        $activeclass = ($currentpage === 'edit_entry.php') ? ' active" aria-current="page' : '';
-        echo '<a class="nav-link' . $activeclass . '" href="' . s($editurl) . '">'
-             . s(get_string('addentry', 'block_mrbs_nds')) . '</a>';
-
-        // Room search.
-        $activeclass = ($currentpage === 'roomsearch.php') ? ' active" aria-current="page' : '';
-        echo '<a class="nav-link' . $activeclass . '" href="' . s($roomsearchurl) . '">'
-             . s(get_string('roomsearch', 'block_mrbs_nds')) . '</a>';
-
-        // Admin.
-        if ($canadmin) {
-            $activeclass = ($currentpage === 'admin.php') ? ' active" aria-current="page' : '';
-            echo '<a class="nav-link' . $activeclass . '" href="' . s($adminurl) . '">'
-                 . s(get_string('admin')) . '</a>';
-        }
-
-        // Report.
-        $activeclass = ($currentpage === 'report.php') ? ' active" aria-current="page' : '';
-        echo '<a class="nav-link' . $activeclass . '" href="' . s($reporturl) . '">'
-             . s(get_string('report')) . '</a>';
-
-        // Search form.
-        $activeclass = ($currentpage === 'search.php') ? ' active" aria-current="page' : '';
-        echo '<form class="d-flex align-items-center gap-1" method="get" action="' . s($searchurl) . '">';
-        echo '<a class="nav-link p-0' . $activeclass . '" href="' . s($searchadvurl) . '">'
-             . s(get_string('search')) . '</a>';
-        echo '<input class="form-control form-control-sm" type="search" name="search_str"'
-             . ' value="' . s($search_str) . '" style="width:8rem">';
-        echo '<input type="hidden" name="day"   value="' . (int) $day . '">';
-        echo '<input type="hidden" name="month" value="' . (int) $month . '">';
-        echo '<input type="hidden" name="year"  value="' . (int) $year . '">';
-        if (!empty($area)) {
-            echo '<input type="hidden" name="area" value="' . (int) $area . '">';
-        }
-        echo '</form>';
+    foreach ($tabs as $file => [$url, $label]) {
+        $active = ($currentpage === $file) ? ' active' : '';
+        echo '<a class="' . $active . '" href="' . s($url) . '">' . s($label) . '</a>';
     }
+    echo '</div>';
 
-    // Help.
-    echo '<a class="nav-link ms-auto" href="' . s($helpurl) . '">'
-         . s(get_string('help'))
-         . '</a>';
+    // Right: date nav + view toggle + add button
+    echo '<div class="mrbs-nav-right">';
 
-    echo '</div></nav>';
+    echo '<div class="mrbs-date-nav">';
+    $prevurl = new moodle_url('/blocks/mrbs_nds/web/' . $currentpage, $prevparams);
+    $nexturl = new moodle_url('/blocks/mrbs_nds/web/' . $currentpage, $nextparams);
+    echo '<a class="btn btn-sm btn-outline-secondary py-0 px-2" href="' . s($prevurl) . '">&#8249;</a>';
+    echo '<span class="mrbs-date-label">' . s($datestr) . '</span>';
+    echo '<a class="btn btn-sm btn-outline-secondary py-0 px-2" href="' . s($nexturl) . '">&#8250;</a>';
+    $todayparams = ['day' => (int)date('d'), 'month' => (int)date('m'), 'year' => (int)date('Y')];
+    if ($area) { $todayparams['area'] = $area; }
+    $todayurl = new moodle_url('/blocks/mrbs_nds/web/' . $currentpage, $todayparams);
+    echo '<a class="btn btn-sm btn-outline-secondary" href="' . s($todayurl) . '">'
+         . s(get_string('gototoday', 'block_mrbs_nds')) . '</a>';
+    echo '</div>';
+
+    echo '<div class="mrbs-view-toggle">';
+    $views = [
+        'day.php'   => [$dayurl,    get_string('viewday',   'block_mrbs_nds')],
+        'week.php'  => [$weekurl,   get_string('viewweek',  'block_mrbs_nds')],
+        'month.php' => [$monthurl2, get_string('viewmonth', 'block_mrbs_nds')],
+    ];
+    foreach ($views as $file => [$url, $label]) {
+        $active = ($currentpage === $file) ? ' active' : '';
+        echo '<a class="' . $active . '" href="' . s($url) . '">' . s($label) . '</a>';
+    }
+    echo '</div>';
+
+    echo '<a class="btn btn-sm btn-primary" href="' . s($editurl) . '">'
+         . '+ ' . s(get_string('addentry', 'block_mrbs_nds')) . '</a>';
+
+    echo '</div>'; // mrbs-nav-right
+    echo '</div>'; // mrbs-nav
 }
+
 
 // ── Duration helpers ──────────────────────────────────────────────────────────
 
@@ -467,20 +472,47 @@ function tdcell(string $colclass): void {
 
 function show_colour_key(): void {
     global $typel;
-    echo '<div class="table-responsive">';
-    echo '<table class="table table-sm table-bordered"><tr>';
-    $nct = 0;
-    for ($ct = 'A'; $ct <= 'Z'; $ct++) {
-        if (!empty($typel[$ct])) {
-            if (++$nct > 5) {
-                $nct = 0;
-                echo '</tr><tr>';
-            }
-            tdcell($ct);
-            echo s($typel[$ct]) . '</td>';
-        }
+
+    // Colour map for entry types A–J (matches original tdcell colours).
+    static $ecolors = [
+        'A' => ['bg' => '#FFCCFF', 'text' => '#6b2d6b'],
+        'B' => ['bg' => '#99CCCC', 'text' => '#1a4d4d'],
+        'C' => ['bg' => '#FF9999', 'text' => '#7a1f1f'],
+        'D' => ['bg' => '#FFFF99', 'text' => '#5c5c00'],
+        'E' => ['bg' => '#C0E0FF', 'text' => '#1a4a7a'],
+        'F' => ['bg' => '#FFCC99', 'text' => '#7a3d00'],
+        'G' => ['bg' => '#FF6666', 'text' => '#ffffff'],
+        'H' => ['bg' => '#66FFFF', 'text' => '#004d4d'],
+        'I' => ['bg' => '#DDFFDD', 'text' => '#1a4d1a'],
+        'J' => ['bg' => '#CCCCCC', 'text' => '#333333'],
+        'K' => ['bg' => '#cfe2ff', 'text' => '#052c65'],
+        'L' => ['bg' => '#d3d3d3', 'text' => '#333333'],
+        'U' => ['bg' => '#fff3cd', 'text' => '#664d03'],
+    ];
+
+    $any = false;
+    foreach ($typel as $ct => $label) {
+        if (!empty($label)) { $any = true; break; }
     }
-    echo '</tr></table></div>';
+    if (!$any) {
+        return;
+    }
+
+    echo '<div class="mrbs-colour-key">';
+    foreach ($typel as $ct => $label) {
+        if (empty($label)) {
+            continue;
+        }
+        // Skip internal system types K/L (imported bookings) in the visual legend
+        if (in_array($ct, ['K', 'L'])) {
+            continue;
+        }
+        $bg   = $ecolors[$ct]['bg']   ?? '#eeeeee';
+        $text = $ecolors[$ct]['text'] ?? '#333333';
+        echo '<span style="background:' . $bg . ';color:' . $text . '">'
+             . s($label) . '</span>';
+    }
+    echo '</div>';
 }
 
 // ── Rounding helpers ──────────────────────────────────────────────────────────

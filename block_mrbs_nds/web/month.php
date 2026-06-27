@@ -181,7 +181,7 @@ if ($room <= 0) {
 }
 
 // Show Month, Year, Area, Room header:
-echo "<h2 align=center>" . userdate($month_start, get_string('strftimemonthyear', 'langconfig'))
+echo '<h2 class="mrbs-page-title text-center">' . userdate($month_start, get_string('strftimemonthyear', 'langconfig'))
  . " - $this_area_name - $this_room_name</h2>\n";
 
 // Show Go to month before and after links

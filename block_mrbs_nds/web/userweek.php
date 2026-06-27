@@ -133,7 +133,7 @@ if ($pview != 1) {
 
 
 // Show area and room:
-echo '<h2 align=center>' . get_string('ttfor', 'block_mrbs_nds') . $TTUSER->firstname . ' ' . $TTUSER->lastname . '</h2>';
+echo '<h2 class="mrbs-page-title text-center">' . get_string('ttfor', 'block_mrbs_nds') . $TTUSER->firstname . ' ' . $TTUSER->lastname . '</h2>';
 
 //y? are year, month and day of the previous week.
 //t? are year, month and day of the next week.
