@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="blocks/mrbs_nds/db" VERSION="2026062701"
+    COMMENT="XMLDB file for Moodle blocks/mrbs_nds"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+
+    <TABLE NAME="block_mrbs_nds_area" COMMENT="Booking areas (buildings, departments, etc.)">
+      <FIELDS>
+        <FIELD NAME="id"               TYPE="int"  LENGTH="10" NOTNULL="true"  SEQUENCE="true"/>
+        <FIELD NAME="area_name"        TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="area_admin_email" TYPE="text"              NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
+    <TABLE NAME="block_mrbs_nds_room" COMMENT="Bookable rooms / resources per area">
+      <FIELDS>
+        <FIELD NAME="id"               TYPE="int"  LENGTH="10"  NOTNULL="true"  SEQUENCE="true"/>
+        <FIELD NAME="area_id"          TYPE="int"  LENGTH="10"  NOTNULL="true"  DEFAULT="0"   SEQUENCE="false"/>
+        <FIELD NAME="room_name"        TYPE="char" LENGTH="255" NOTNULL="true"                SEQUENCE="false"/>
+        <FIELD NAME="description"      TYPE="char" LENGTH="255" NOTNULL="false"               SEQUENCE="false"/>
+        <FIELD NAME="capacity"         TYPE="int"  LENGTH="10"  NOTNULL="true"  DEFAULT="0"   SEQUENCE="false"/>
+        <FIELD NAME="room_admin_email" TYPE="text"              NOTNULL="false"               SEQUENCE="false"/>
+        <FIELD NAME="booking_users"    TYPE="text"              NOTNULL="false"               SEQUENCE="false"
+               COMMENT="Comma-separated list of Moodle user IDs allowed to book (empty = anyone with editmrbs)"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary"  TYPE="primary"  FIELDS="id"/>
+        <KEY NAME="fk_areaid" TYPE="foreign" FIELDS="area_id" REFTABLE="block_mrbs_nds_area" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
+    <TABLE NAME="block_mrbs_nds_entry" COMMENT="Individual booking entries">
+      <FIELDS>
+        <FIELD NAME="id"          TYPE="int"  LENGTH="10" NOTNULL="true"  SEQUENCE="true"/>
+        <FIELD NAME="start_time"  TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="0"  SEQUENCE="false"/>
+        <FIELD NAME="end_time"    TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="0"  SEQUENCE="false"/>
+        <FIELD NAME="entry_type"  TYPE="int"  LENGTH="4"  NOTNULL="true"  DEFAULT="0"  SEQUENCE="false"
+               COMMENT="0=single, 1=part of repeat series, 2=user-modified within series"/>
+        <FIELD NAME="repeat_id"   TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="0"  SEQUENCE="false"/>
+        <FIELD NAME="room_id"     TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="1"  SEQUENCE="false"/>
+        <FIELD NAME="timestamp"   TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="0"  SEQUENCE="false"/>
+        <FIELD NAME="create_by"   TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="0"  SEQUENCE="false"
+               COMMENT="Moodle user.id of the booking creator"/>
+        <FIELD NAME="name"        TYPE="char" LENGTH="255" NOTNULL="true"              SEQUENCE="false"/>
+        <FIELD NAME="type"        TYPE="char" LENGTH="1"   NOTNULL="true"  DEFAULT="E" SEQUENCE="false"
+               COMMENT="Booking type character (E=internal, U=unconfirmed, etc.)"/>
+        <FIELD NAME="description" TYPE="text"              NOTNULL="false"             SEQUENCE="false"/>
+        <FIELD NAME="roomchange"  TYPE="int"  LENGTH="4"  NOTNULL="true"  DEFAULT="0"  SEQUENCE="false"
+               COMMENT="Flag: entry was moved to a different room"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary"    TYPE="primary"  FIELDS="id"/>
+        <KEY NAME="fk_roomid"  TYPE="foreign"  FIELDS="room_id"   REFTABLE="block_mrbs_nds_room"   REFFIELDS="id"/>
+        <KEY NAME="fk_repeatid" TYPE="foreign" FIELDS="repeat_id" REFTABLE="block_mrbs_nds_repeat" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="idx_starttime" UNIQUE="false" FIELDS="start_time"/>
+        <INDEX NAME="idx_endtime"   UNIQUE="false" FIELDS="end_time"/>
+        <INDEX NAME="idx_roomid"    UNIQUE="false" FIELDS="room_id"/>
+        <INDEX NAME="idx_createby"  UNIQUE="false" FIELDS="create_by"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="block_mrbs_nds_repeat" COMMENT="Repeat-booking series definitions">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10" NOTNULL="true"  SEQUENCE="true"/>
+        <FIELD NAME="start_time"   TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="0"   SEQUENCE="false"/>
+        <FIELD NAME="end_time"     TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="0"   SEQUENCE="false"/>
+        <FIELD NAME="rep_type"     TYPE="int"  LENGTH="4"  NOTNULL="true"  DEFAULT="0"   SEQUENCE="false"
+               COMMENT="0=none,1=daily,2=weekly,3=monthly,4=yearly,5=monthly-same-week,6=n-weekly"/>
+        <FIELD NAME="end_date"     TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="0"   SEQUENCE="false"/>
+        <FIELD NAME="rep_opt"      TYPE="char" LENGTH="32" NOTNULL="true"                SEQUENCE="false"
+               COMMENT="7-char bitmask string (0/1) for weekday selection in weekly repeats"/>
+        <FIELD NAME="room_id"      TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="1"   SEQUENCE="false"/>
+        <FIELD NAME="timestamp"    TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="0"   SEQUENCE="false"/>
+        <FIELD NAME="create_by"    TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="0"   SEQUENCE="false"
+               COMMENT="Moodle user.id of the booking creator"/>
+        <FIELD NAME="name"         TYPE="char" LENGTH="255" NOTNULL="true"               SEQUENCE="false"/>
+        <FIELD NAME="type"         TYPE="char" LENGTH="1"   NOTNULL="true"  DEFAULT="E"  SEQUENCE="false"/>
+        <FIELD NAME="description"  TYPE="text"              NOTNULL="false"              SEQUENCE="false"/>
+        <FIELD NAME="rep_num_weeks" TYPE="int" LENGTH="6"   NOTNULL="false"              SEQUENCE="false"
+               COMMENT="Used for rep_type=6 (every n weeks)"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary"   TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_roomid" TYPE="foreign" FIELDS="room_id" REFTABLE="block_mrbs_nds_room" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
+  </TABLES>
+</XMLDB>

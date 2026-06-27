@@ -1,0 +1,23 @@
+/*
+    Document   : styles.css
+    Created on : Jun 25, 2019, 6:57:02 PM
+    Author     : p.liersch
+    Description: stylesheet for mrbs RLP
+*/
+
+#mrbs_rlpcontainer {color:black; font-size: 10pt; font-family:arial,sans-serif; overflow: auto; padding: 1px;}
+
+#mrbs_rlpcontainer a:link {font-weight: inherit; text-decoration: none}
+#mrbs_rlpcontainer a:visited {font-weight: inherit; text-decoration: none}
+#mrbs_rlpcontainer a:hover {color:red; text-decoration:underline}
+
+#mrbs_rlpcontainer a.active {font-weight:bold;}
+
+#mrbs_rlpcontainer H1 {color:black; font-family:verdana,sans-serif; font-size:16pt}
+#mrbs_rlpcontainer H2 {color:black; font-family:verdana,sans-serif; font-size:14pt}
+#mrbs_rlpcontainer H3 {font-family:verdana,sans-serif; font-size:12pt}
+
+#mrbs_rlpcontainer .calendar {font-size: 10pt;}
+#mrbs_rlpcontainer td.banner {border: 0;padding:0;}
+#mrbs_rlpcontainer td.banner.title {padding-left: 5px;vertical-align: middle;}
+#mrbs_rlpcontainer table.banner.table {border-collapse: collapse !important;background-color:#c0e0ff;border:1px solid #aaa;width:100%}
