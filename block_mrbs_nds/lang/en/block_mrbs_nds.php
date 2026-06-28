@@ -375,3 +375,15 @@ $string['userweek']      = 'My week';
 $string['viewdayshort']  = 'Day';
 $string['viewweekshort'] = 'Week';
 $string['viewmonthshort']= 'Month';
+
+// ── Capability strings (required for role administration) ─────────────────────
+$string['mrbs_nds:myaddinstance']         = 'Add block to dashboard';
+$string['mrbs_nds:addinstance']           = 'Add block to a course';
+$string['mrbs_nds:viewmrbs']             = 'View the room booking calendar';
+$string['mrbs_nds:editmrbs']             = 'Create and edit bookings';
+$string['mrbs_nds:administermrbs']        = 'Administer areas, rooms and all bookings';
+$string['mrbs_nds:viewalltt']             = 'View all timetables';
+$string['mrbs_nds:forcebook']             = 'Force a booking (move other bookings)';
+$string['mrbs_nds:doublebook']            = 'Allow double-booking';
+$string['mrbs_nds:editmrbs_unconfirmed']  = 'Create unconfirmed bookings only';
+$string['mrbs_nds:ignoremaxadvancedays']  = 'Ignore maximum advance days restriction';

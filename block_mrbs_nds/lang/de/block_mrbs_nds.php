@@ -377,3 +377,15 @@ $string['userweek']      = 'Meine Woche';
 $string['viewdayshort']  = 'Tag';
 $string['viewweekshort'] = 'Woche';
 $string['viewmonthshort']= 'Monat';
+
+// ── Capability-Strings (Pflicht für Rollen-Administration) ────────────────────
+$string['mrbs_nds:myaddinstance']         = 'Block zum Dashboard hinzufügen';
+$string['mrbs_nds:addinstance']           = 'Block zu einem Kurs hinzufügen';
+$string['mrbs_nds:viewmrbs']              = 'Raumbuchungskalender ansehen';
+$string['mrbs_nds:editmrbs']             = 'Buchungen erstellen und bearbeiten';
+$string['mrbs_nds:administermrbs']        = 'Bereiche, Räume und alle Buchungen verwalten';
+$string['mrbs_nds:viewalltt']             = 'Alle Stundenpläne ansehen';
+$string['mrbs_nds:forcebook']             = 'Buchung erzwingen (andere Buchungen verschieben)';
+$string['mrbs_nds:doublebook']            = 'Doppelbuchung zulassen';
+$string['mrbs_nds:editmrbs_unconfirmed']  = 'Nur unbestätigte Buchungen erstellen';
+$string['mrbs_nds:ignoremaxadvancedays']  = 'Vorlaufzeit-Beschränkung ignorieren';
