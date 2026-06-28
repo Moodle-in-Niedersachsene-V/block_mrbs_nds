@@ -265,7 +265,7 @@ if($cnt_entries >= 1 || $cnt_rooms >= 1 || $cnt_areas >= 1 || $cnt_repeats >= 1)
 <strong>Anzahl Einträge (MRBS RLP):</strong>&nbsp;<?= $cnt_entries ?></p>
 
 <button type="button" class="btn btn-danger" 
-        onclick="if (confirm('<?= get_string('deleteseries', 'block_mrbs_nds') ?>?')) {
+        onclick="if (confirm('<?= s(get_string('deleteseries', 'block_mrbs_nds')) ?>?')) {
                     document.location = '<?= $delurl ?>';
                 }" />
 <?= get_string('deleteseries', 'block_mrbs_nds') ?>?</button>  <em><strong>Warnung:</strong> Dadurch gehen alle Einträge verloren!</em>
@@ -281,11 +281,13 @@ if($cnt_entries >= 1 || $cnt_rooms >= 1 || $cnt_areas >= 1 || $cnt_repeats >= 1)
 
 $chkdelete = optional_param('delete', false, PARAM_BOOL);
 if ($chkdelete === 1 || $chkdelete === true) {
+    require_sesskey(); // CSRF-Schutz: serverseitige Prüfung
     $DB->delete_records('block_mrbs_nds_entry');
 }
 
 $chkdelete_all = optional_param('delete_all', false, PARAM_BOOL);
 if ($chkdelete_all === 1 || $chkdelete_all === true) {
+    require_sesskey(); // CSRF-Schutz: serverseitige Prüfung
     $DB->delete_records('block_mrbs_nds_entry');
     $DB->delete_records('block_mrbs_nds_area');
     $DB->delete_records('block_mrbs_nds_room');

@@ -151,7 +151,7 @@ if ($area_list_format == "select") {
     $rooms = $DB->get_records('block_mrbs_nds_room', ['area_id' => $area], 'room_name');
     foreach ($rooms as $dbroom) {
         if ($pview != 1) {
-            echo '<a href="' . ($baseurl->out(true, ['area' => $area, 'room' => $dbroom->id])) . '" title="' . $dbroom->room_name . '">';
+            echo '<a href="' . ($baseurl->out(true, ['area' => $area, 'room' => $dbroom->id])) . '" title="' . s($dbroom->room_name) . '">';
         }
         if ($dbroom->id == $room) {
             $this_room_name = s($dbroom->room_name);

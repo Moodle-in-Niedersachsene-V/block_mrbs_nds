@@ -277,8 +277,9 @@ echo '<span id="mrbs-panel-title">' . s(get_string('addentry', 'block_mrbs_nds')
 echo '<button class="mrbs-form-panel-close" onclick="mrbsClosePanel()" aria-label="Schließen">&#x2715;</button>';
 echo '</div>';
 
-// The panel form posts to edit_entry.php directly
-$handlerurl = new moodle_url('/blocks/mrbs_nds/web/edit_entry.php');
+// The panel form posts to edit_entry_handler.php (saves the booking).
+// edit_entry.php is only for displaying/editing the full form.
+$handlerurl = new moodle_url('/blocks/mrbs_nds/web/edit_entry_handler.php');
 echo '<form id="mrbs-panel-form" method="post" action="' . s($handlerurl) . '">';
 echo '<input type="hidden" name="sesskey" value="' . sesskey() . '">';
 echo '<input type="hidden" name="day"     id="fp_day"    value="' . (int)$day . '">';
