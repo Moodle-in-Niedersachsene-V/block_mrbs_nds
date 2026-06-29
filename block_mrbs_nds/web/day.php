@@ -87,7 +87,7 @@ if ($area <= 0) {
 }
 
 // Fetch room data
-$rooms = $DB->get_records('block_mrbs_nds_room', ['area_id' => $area], 'room_name');
+$rooms = $DB->get_records('block_mrbs_rlp_room', ['area_id' => $area], 'room_name');
 foreach ($rooms as $room) {
     $room->allowedtobook = allowed_to_book($USER, $room);
 }
@@ -97,8 +97,8 @@ $today = [];
 if (!empty($rooms)) {
     $sql = "SELECT e.id AS eid, r.id AS rid, e.start_time, e.end_time,
                    e.name, e.type, e.description, e.repeat_id
-              FROM {block_mrbs_nds_entry} e
-              JOIN {block_mrbs_nds_room} r ON r.id = e.room_id
+              FROM {block_mrbs_rlp_entry} e
+              JOIN {block_mrbs_rlp_room} r ON r.id = e.room_id
              WHERE r.area_id = ? AND e.start_time <= ? AND e.end_time > ?";
     $entries = $DB->get_records_sql($sql, [$area, $pm7, $am7]);
 
@@ -129,7 +129,7 @@ echo '<div class="mrbs-layout">';
 // ── Sidebar ──────────────────────────────────────────────────────────────────
 echo '<div class="mrbs-sidebar">';
 echo '<div class="mrbs-sidebar-label">' . s(get_string('areas', 'block_mrbs_nds')) . '</div>';
-$allareas = $DB->get_records('block_mrbs_nds_area', null, 'area_name');
+$allareas = $DB->get_records('block_mrbs_rlp_area', null, 'area_name');
 foreach ($allareas as $dbarea) {
     $areaurl = new moodle_url('/blocks/mrbs_nds/web/day.php',
         ['day' => $day, 'month' => $month, 'year' => $year, 'area' => $dbarea->id]);

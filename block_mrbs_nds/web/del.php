@@ -65,14 +65,14 @@ if ($type === 'room') {
     $adminurl->param('area', $area);
 
     if ($confirm) {
-        $DB->delete_records('block_mrbs_nds_entry', ['room_id' => $room]);
-        $DB->delete_records('block_mrbs_nds_room',  ['id'      => $room]);
+        $DB->delete_records('block_mrbs_rlp_entry', ['room_id' => $room]);
+        $DB->delete_records('block_mrbs_rlp_room',  ['id'      => $room]);
         redirect($adminurl);
     }
 
     print_header_mrbs_nds($day, $month, $year, $area);
 
-    $bookings = $DB->get_records('block_mrbs_nds_entry', ['room_id' => $room]);
+    $bookings = $DB->get_records('block_mrbs_rlp_entry', ['room_id' => $room]);
     if (!empty($bookings)) {
         echo '<p>' . s(get_string('deletefollowing', 'block_mrbs_nds')) . ':</p><ul>';
         foreach ($bookings as $booking) {
@@ -98,9 +98,9 @@ if ($type === 'room') {
 }
 
 if ($type === 'area') {
-    $n = $DB->count_records('block_mrbs_nds_room', ['area_id' => $area]);
+    $n = $DB->count_records('block_mrbs_rlp_room', ['area_id' => $area]);
     if ($n === 0) {
-        $DB->delete_records('block_mrbs_nds_area', ['id' => $area]);
+        $DB->delete_records('block_mrbs_rlp_area', ['id' => $area]);
         redirect($adminurl);
     } else {
         print_header_mrbs_nds($day, $month, $year, $area);

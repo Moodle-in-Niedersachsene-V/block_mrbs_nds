@@ -96,7 +96,7 @@ $editunconfirmed = has_capability('block/mrbs_nds:editmrbs_unconfirmed', $contex
 if (!getWritable($create_by, getUserID())) {
     if ($editunconfirmed) {
         foreach ($rooms as $key => $room_id) {
-            $adminemail = $DB->get_field('block_mrbs_nds_room', 'room_admin_email', ['id' => $room_id]);
+            $adminemail = $DB->get_field('block_mrbs_rlp_room', 'room_admin_email', ['id' => $room_id]);
             if ($adminemail === $USER->email) {
                 $roomadmin = true;
             } else {
@@ -113,7 +113,7 @@ if (!getWritable($create_by, getUserID())) {
 // Non-room-admin unconfirmed users cannot create confirmed bookings.
 if (authGetUserLevel(getUserID()) < 2 && $editunconfirmed) {
     foreach ($rooms as $room_id) {
-        $adminemail = $DB->get_field('block_mrbs_nds_room', 'room_admin_email', ['id' => $room_id]);
+        $adminemail = $DB->get_field('block_mrbs_rlp_room', 'room_admin_email', ['id' => $room_id]);
         if ($adminemail !== $USER->email) {
             $type = 'U';
             break;
@@ -147,7 +147,7 @@ if (!check_max_advance_days($day, $month, $year)) {
     exit;
 }
 
-$roomdetails = $DB->get_records_list('block_mrbs_nds_room', 'id', $rooms);
+$roomdetails = $DB->get_records_list('block_mrbs_rlp_room', 'id', $rooms);
 foreach ($roomdetails as $roomrec) {
     if (!allowed_to_book($USER, $roomrec)) {
         print_header_mrbs_nds($day, $month, $year, $area);
@@ -261,7 +261,7 @@ if ($rep_type !== 0) {
 $repeat_id = 0;
 if ($id > 0) {
     $ignore_id = $id;
-    $repeat_id = (int) $DB->get_field('block_mrbs_nds_entry', 'repeat_id', ['id' => $id]);
+    $repeat_id = (int) $DB->get_field('block_mrbs_rlp_entry', 'repeat_id', ['id' => $id]);
     if ($repeat_id < 0) {
         $repeat_id = 0;
     }
@@ -299,8 +299,8 @@ foreach ($rooms as $room_id) {
             // Double-book: notify existing bookers.
             $sql = "SELECT e.id AS entryid, e.name AS entryname, e.create_by,
                            r.room_name, e.start_time
-                      FROM {block_mrbs_nds_entry} e
-                      JOIN {block_mrbs_nds_room} r ON r.id = e.room_id
+                      FROM {block_mrbs_rlp_entry} e
+                      JOIN {block_mrbs_rlp_room} r ON r.id = e.room_id
                      WHERE r.id = ?
                        AND ((e.start_time >= ? AND e.end_time < ?)
                          OR (e.start_time < ?  AND e.end_time > ?)
@@ -350,7 +350,7 @@ if (empty($err)) {
 
             $dbroom    = $DB->get_record_sql(
                 "SELECT r.id, r.room_name, r.area_id, a.area_name
-                   FROM {block_mrbs_nds_room} r JOIN {block_mrbs_nds_area} a ON a.id = r.area_id
+                   FROM {block_mrbs_rlp_room} r JOIN {block_mrbs_rlp_area} a ON a.id = r.area_id
                   WHERE r.id = ?",
                 [$room_id], MUST_EXIST
             );
@@ -382,7 +382,7 @@ if (empty($err)) {
 
             $dbroom    = $DB->get_record_sql(
                 "SELECT r.id, r.room_name, r.area_id, a.area_name
-                   FROM {block_mrbs_nds_room} r JOIN {block_mrbs_nds_area} a ON a.id = r.area_id
+                   FROM {block_mrbs_rlp_room} r JOIN {block_mrbs_rlp_area} a ON a.id = r.area_id
                   WHERE r.id = ?",
                 [$room_id], MUST_EXIST
             );

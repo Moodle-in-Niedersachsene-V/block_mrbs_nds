@@ -117,11 +117,11 @@ if ($pview != 1) {
 // show either a select box or the normal html list
 if ($area_list_format == "select") {
     echo make_area_select_html('week.php', $area, $year, $month, $day); // from functions.php
-    $this_area_name = $DB->get_field('block_mrbs_nds_area', 'area_name', ['id' => $area]);
-    $this_room_name = $DB->get_field('block_mrbs_nds_room', 'room_name', ['id' => $room]);
-    $this_room_description = $DB->get_field('block_mrbs_nds_room', 'description', ['id' => $room]);
+    $this_area_name = $DB->get_field('block_mrbs_rlp_area', 'area_name', ['id' => $area]);
+    $this_room_name = $DB->get_field('block_mrbs_rlp_room', 'room_name', ['id' => $room]);
+    $this_room_description = $DB->get_field('block_mrbs_rlp_room', 'description', ['id' => $room]);
 } else {
-    $areas = $DB->get_records('block_mrbs_nds_area', null, 'area_name');
+    $areas = $DB->get_records('block_mrbs_rlp_area', null, 'area_name');
     foreach ($areas as $dbarea) {
         if ($pview != 1) {
             echo '<a href="' . ($baseurl->out(true, ['area' => $dbarea->id])) . '">';
@@ -148,7 +148,7 @@ if ($pview != 1) {
 if ($area_list_format == "select") {
     echo make_room_select_html('week.php', $area, $room, $year, $month, $day); // from functions.php
 } else {
-    $rooms = $DB->get_records('block_mrbs_nds_room', ['area_id' => $area], 'room_name');
+    $rooms = $DB->get_records('block_mrbs_rlp_room', ['area_id' => $area], 'room_name');
     foreach ($rooms as $dbroom) {
         if ($pview != 1) {
             echo '<a href="' . ($baseurl->out(true, ['area' => $area, 'room' => $dbroom->id])) . '" title="' . s($dbroom->room_name) . '">';
@@ -210,7 +210,7 @@ if ($pview != 1) {
       " . get_string('weekafter', 'block_mrbs_nds') . "&gt;&gt;</a></td></tr></table>";
 }
 
-$roomdata = $DB->get_record('block_mrbs_nds_room', ['id' => $room]);
+$roomdata = $DB->get_record('block_mrbs_rlp_room', ['id' => $room]);
 $allowedtobook = allowed_to_book($USER, $roomdata);
 
 //Get all appointments for this week in the room that we care about
@@ -227,7 +227,7 @@ for ($j = 0; $j <= ($num_of_days - 1); $j++) {
     // If 0, then weekday=0 means Sunday. If 1, weekday=0 means Monday.
 
     $sql = 'room_id = ? AND start_time <= ? AND end_time > ?';
-    $entries = $DB->get_records_select('block_mrbs_nds_entry', $sql, [$room, $pm7[$j], $am7[$j]]);
+    $entries = $DB->get_records_select('block_mrbs_rlp_entry', $sql, [$room, $pm7[$j], $am7[$j]]);
 
     foreach ($entries as $entry) {
         if ($debug_flag) {

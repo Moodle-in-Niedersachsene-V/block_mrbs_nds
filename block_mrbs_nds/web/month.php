@@ -116,10 +116,10 @@ if ($pview != 1) {
 // show either a select box or the normal html list
 if ($area_list_format == "select") {
     echo make_area_select_html('month.php', $area, $year, $month, $day); // from functions.php
-    $this_area_name = s($DB->get_field('block_mrbs_nds_area', 'area_name', ['id' => $area]));
-    $this_room_name = s($DB->get_field('block_mrbs_nds_room', 'room_name', ['id' => $room]));
+    $this_area_name = s($DB->get_field('block_mrbs_rlp_area', 'area_name', ['id' => $area]));
+    $this_room_name = s($DB->get_field('block_mrbs_rlp_room', 'room_name', ['id' => $room]));
 } else {
-    $dbareas = $DB->get_records('block_mrbs_nds_area', null, 'area_name');
+    $dbareas = $DB->get_records('block_mrbs_rlp_area', null, 'area_name');
     $areaurl = new moodle_url($baseurl);
     foreach ($dbareas as $dbarea) {
         if ($pview != 1) {
@@ -149,7 +149,7 @@ if ($pview != 1) {
 if ($area_list_format == "select") {
     echo make_room_select_html('month.php', $area, $room, $year, $month, $day); // from functions.php
 } else {
-    $rooms = $DB->get_records('block_mrbs_nds_room', ['area_id' => $area], 'room_name');
+    $rooms = $DB->get_records('block_mrbs_rlp_room', ['area_id' => $area], 'room_name');
     $roomurl = new moodle_url($baseurl, ['area' => $area]);
     foreach ($rooms as $dbroom) {
         $roomurl->param('room', $dbroom->id);
@@ -222,7 +222,7 @@ for ($day_num = 1; $day_num <= $days_in_month; $day_num++) {
     //  d[monthday]["id"][] = ID of each entry, for linking.
     //  d[monthday]["data"][] = "start-stop" times or "name" of each entry.
 
-    $entries = $DB->get_records_select('block_mrbs_nds_entry', 'room_id = ? AND start_time <= ? AND end_time > ?', [$room, $midnight_tonight[$day_num], $midnight[$day_num]], 'start_time');
+    $entries = $DB->get_records_select('block_mrbs_rlp_entry', 'room_id = ? AND start_time <= ? AND end_time > ?', [$room, $midnight_tonight[$day_num], $midnight[$day_num]], 'start_time');
 
     foreach ($entries as $entry) {
         if ($debug_flag) {
@@ -340,7 +340,7 @@ for ($weekcol = 0; $weekcol < $weekday_start; $weekcol++) {
     echo "<td bgcolor=\"#cccccc\" height=100>&nbsp;</td>\n";
 }
 
-$roomdata = $DB->get_record('block_mrbs_nds_room', ['id' => $room]);
+$roomdata = $DB->get_record('block_mrbs_rlp_room', ['id' => $room]);
 $allowedtobook = allowed_to_book($USER, $roomdata);
 
 // Draw the days of the month:

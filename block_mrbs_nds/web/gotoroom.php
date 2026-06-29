@@ -44,8 +44,8 @@ if (!getAuthorised(1)) {
 }
 
 $sql  = "SELECT r.area_id, a.area_name
-           FROM {block_mrbs_nds_room} r
-           JOIN {block_mrbs_nds_area} a ON a.id = r.area_id
+           FROM {block_mrbs_rlp_room} r
+           JOIN {block_mrbs_rlp_area} a ON a.id = r.area_id
           WHERE r.room_name = ? OR r.room_name = ?";
 $area = $DB->get_record_sql($sql, [$room, '0' . $room], IGNORE_MULTIPLE);
 

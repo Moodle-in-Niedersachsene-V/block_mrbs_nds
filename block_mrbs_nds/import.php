@@ -60,7 +60,7 @@ if (!empty($cfg_mrbs_rlp->cronfile) && file_exists($cfg_mrbs_rlp->cronfile)) {
     if ($mrbs_rlp_sessions = fopen($cfg_mrbs_rlp->cronfile, 'r')) {
         $output .= get_string('startedimport', 'block_mrbs_nds') . "\n";
         $now = time();
-        $DB->set_field_select('block_mrbs_nds_entry', 'type', 'M', 'type=\'K\' and start_time > ?', [$now]); // Change old imported (type K) records to temporary type M
+        $DB->set_field_select('block_mrbs_rlp_entry', 'type', 'M', 'type=\'K\' and start_time > ?', [$now]); // Change old imported (type K) records to temporary type M
         while ($array = fgetcsv($mrbs_rlp_sessions)) { //import timetable into mrbs_rlp
             $csvrow = new stdClass();
             $csvrow->start_time = clean_param($array[0], PARAM_TEXT);
@@ -90,11 +90,11 @@ if (!empty($cfg_mrbs_rlp->cronfile) && file_exists($cfg_mrbs_rlp->cronfile)) {
                         $entry->name = $csvrow->name;
                         $entry->type = 'K';
                         $entry->description = $csvrow->description;
-                        $newentryid = $DB->insert_record('block_mrbs_nds_entry', $entry);
+                        $newentryid = $DB->insert_record('block_mrbs_rlp_entry', $entry);
 
                         //If there is another non-imported booking there, send emails. It is assumed that simultanious imported classes are intentional
                         $sql = "SELECT *
-                                FROM {block_mrbs_nds_entry} AS e
+                                FROM {block_mrbs_rlp_entry} AS e
                                 WHERE
                                     ((e.start_time < ? AND e.end_time > ?)
                                   OR (e.start_time < ? AND e.end_time > ?)
@@ -148,7 +148,7 @@ if (!empty($cfg_mrbs_rlp->cronfile) && file_exists($cfg_mrbs_rlp->cronfile)) {
         }
 
         // any remaining type M records are no longer in the import file, so delete
-        $DB->delete_records_select('block_mrbs_nds_entry', 'type=\'M\'');
+        $DB->delete_records_select('block_mrbs_rlp_entry', 'type=\'M\'');
 
         //move the processed file to prevent wasted time re-processing TODO: option for how long to keep these- I've found them useful for debugging but obviously can't keep them for ever
         $date = date('Ymd');
@@ -174,7 +174,7 @@ class import
     public static function room_id_lookup($name)
     {
         global $DB;
-        if (!$room = $DB->get_record('block_mrbs_nds_room', ['room_name' => $name])) {
+        if (!$room = $DB->get_record('block_mrbs_rlp_room', ['room_name' => $name])) {
             $error = "ERROR: failed to return id from database (room $name probably doesn't exist)";
             echo $error . "\n";
             return 'error';
@@ -196,16 +196,16 @@ class import
     public static function is_timetabled($name, $time)
     {
         global $DB;
-        if ($DB->get_record('block_mrbs_nds_entry', ['name' => $name, 'start_time' => $time, 'type' => 'L'])) {
+        if ($DB->get_record('block_mrbs_rlp_entry', ['name' => $name, 'start_time' => $time, 'type' => 'L'])) {
             return true;
-        } elseif ($record = $DB->get_record('block_mrbs_nds_entry', [
+        } elseif ($record = $DB->get_record('block_mrbs_rlp_entry', [
           'name' => $name, 'start_time' => $time, 'type' => 'M'
               ])
       ) {
             $upd = new stdClass;
             $upd->id = $record->id;
             $upd->type = 'K';
-            if ($DB->update_record('block_mrbs_nds_entry', $upd)) {
+            if ($DB->update_record('block_mrbs_rlp_entry', $upd)) {
                 return true;
             } else {
                 return false;

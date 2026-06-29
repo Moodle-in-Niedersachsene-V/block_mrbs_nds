@@ -41,8 +41,11 @@ function print_header_mrbs_nds(
 ): void {
     global $OUTPUT, $PAGE, $USER, $CFG, $search_str, $locale_warning, $pview;
 
-    $cfg   = get_config('block_mrbs_nds');
-    $title = get_string('blockname', 'block_mrbs_nds');
+    $cfg    = get_config('block_mrbs_nds');
+    // Build title with optional suffix (e.g. "MRBS Raumbuchung NDS").
+    $suffix = trim((string) ($cfg->site_suffix ?? 'NDS'));
+    $base   = get_string('blockname', 'block_mrbs_nds');
+    $title  = $suffix !== '' ? $base . ' ' . $suffix : $base;
 
     if (!get_site()) {
         redirect(new moodle_url('/admin/index.php'));
@@ -115,7 +118,7 @@ function print_header_mrbs_nds(
     // ── Navigation bar ────────────────────────────────────────────────────
     echo '<div class="mrbs-nav">';
     echo '<a class="mrbs-nav-title" href="' . s($homeurl) . '">'
-         . s(get_string('mrbs_nds', 'block_mrbs_nds')) . '</a>';
+         . s($title) . '</a>';
 
     // Tabs
     echo '<div class="mrbs-tabs">';
@@ -307,7 +310,7 @@ function fatal_error(bool $need_header, string $message): void {
 
 function get_default_area(): int {
     global $DB;
-    $area = $DB->get_records('block_mrbs_nds_area', null, 'area_name', 'id', 0, 1);
+    $area = $DB->get_records('block_mrbs_rlp_area', null, 'area_name', 'id', 0, 1);
     if (empty($area)) {
         return 0;
     }
@@ -316,7 +319,7 @@ function get_default_area(): int {
 
 function get_default_room(int $area): int {
     global $DB;
-    $room = $DB->get_records('block_mrbs_nds_room', ['area_id' => $area], 'room_name', 'id', 0, 1);
+    $room = $DB->get_records('block_mrbs_rlp_room', ['area_id' => $area], 'room_name', 'id', 0, 1);
     if (empty($room)) {
         return 0;
     }
@@ -382,7 +385,7 @@ function make_area_select_html(string $link, int $current, int $year, int $month
     $out .= '<select class="form-select form-select-sm d-inline-block w-auto"'
             . ' name="area" onchange="document.areaChangeForm.submit()">';
 
-    $areas = $DB->get_records('block_mrbs_nds_area', null, 'area_name');
+    $areas = $DB->get_records('block_mrbs_rlp_area', null, 'area_name');
     foreach ($areas as $area) {
         $sel  = ($area->id == $current) ? ' selected' : '';
         $out .= '<option' . $sel . ' value="' . (int) $area->id . '">' . s($area->area_name) . '</option>';
@@ -406,7 +409,7 @@ function make_room_select_html(string $link, int $area, int $current, int $year,
     $out .= '<select class="form-select form-select-sm d-inline-block w-auto"'
             . ' name="room" onchange="document.roomChangeForm.submit()">';
 
-    $rooms = $DB->get_records('block_mrbs_nds_room', ['area_id' => $area], 'room_name');
+    $rooms = $DB->get_records('block_mrbs_rlp_room', ['area_id' => $area], 'room_name');
     foreach ($rooms as $room) {
         $sel  = ($room->id == $current) ? ' selected' : '';
         $out .= '<option' . $sel . ' value="' . (int) $room->id . '">' . s($room->room_name) . '</option>';
@@ -659,9 +662,9 @@ function notifyAdminOnBooking(bool $new_entry, int $new_id, ?int $modified_endda
     if (defined('MAIL_AREA_ADMIN_ON_BOOKINGS') && MAIL_AREA_ADMIN_ON_BOOKINGS) {
         if ($new_entry) {
             $sql = "SELECT a.area_admin_email
-                      FROM {block_mrbs_nds_room} r
-                      JOIN {block_mrbs_nds_area} a ON a.id = r.area_id
-                      JOIN {block_mrbs_nds_entry} e ON e.room_id = r.id
+                      FROM {block_mrbs_rlp_room} r
+                      JOIN {block_mrbs_rlp_area} a ON a.id = r.area_id
+                      JOIN {block_mrbs_rlp_entry} e ON e.room_id = r.id
                      WHERE e.id = ?";
             $emails = $DB->get_records_sql($sql, [$new_id], 0, 1);
             if (!empty($emails)) {
@@ -678,8 +681,8 @@ function notifyAdminOnBooking(bool $new_entry, int $new_id, ?int $modified_endda
     if (defined('MAIL_ROOM_ADMIN_ON_BOOKINGS') && MAIL_ROOM_ADMIN_ON_BOOKINGS) {
         if ($new_entry) {
             $sql = "SELECT r.room_admin_email
-                      FROM {block_mrbs_nds_room} r
-                      JOIN {block_mrbs_nds_entry} e ON e.room_id = r.id
+                      FROM {block_mrbs_rlp_room} r
+                      JOIN {block_mrbs_rlp_entry} e ON e.room_id = r.id
                      WHERE e.id = ?";
             $emails = $DB->get_records_sql($sql, [$new_id], 0, 1);
             if (!empty($emails)) {
@@ -844,12 +847,12 @@ function getPreviousEntryData(int $id, int $series): array {
                    re.end_date   AS tbl_r_end_date";
     }
 
-    $sql .= " FROM {block_mrbs_nds_entry} e
-              JOIN {block_mrbs_nds_room} r  ON r.id = e.room_id
-              JOIN {block_mrbs_nds_area} a  ON a.id = r.area_id";
+    $sql .= " FROM {block_mrbs_rlp_entry} e
+              JOIN {block_mrbs_rlp_room} r  ON r.id = e.room_id
+              JOIN {block_mrbs_rlp_area} a  ON a.id = r.area_id";
 
     if ($series) {
-        $sql .= " JOIN {block_mrbs_nds_repeat} re ON re.id = e.repeat_id";
+        $sql .= " JOIN {block_mrbs_rlp_repeat} re ON re.id = e.repeat_id";
     }
 
     $sql .= " WHERE e.id = ?";

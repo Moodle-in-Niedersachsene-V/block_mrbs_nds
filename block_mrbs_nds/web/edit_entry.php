@@ -96,7 +96,7 @@ if (!isset($HTTP_REFERER)) {
 // and if it's a modification we need to get all the old data from the db.
 // If we had $id passed in then it's a modification.
 if ($id > 0) {
-    $entry = $DB->get_record('block_mrbs_nds_entry', ['id' => $id], '*', MUST_EXIST);
+    $entry = $DB->get_record('block_mrbs_rlp_entry', ['id' => $id], '*', MUST_EXIST);
     // Note: Removed stripslashes() calls from name and description. Previous
     // versions of MRBS mistakenly had the backslash-escapes in the actual database
     // records because of an extra addslashes going on. Fix your database and
@@ -125,7 +125,7 @@ if ($id > 0) {
     $rep_id = $entry->repeat_id;
 
     if ($entry_type >= 1) {
-        $repeat = $DB->get_record('block_mrbs_nds_repeat', ['id' => $rep_id], '*', MUST_EXIST);
+        $repeat = $DB->get_record('block_mrbs_rlp_repeat', ['id' => $rep_id], '*', MUST_EXIST);
         $rep_type = $repeat->rep_type;
 
         if ($edit_type == "series") {
@@ -194,7 +194,7 @@ if ($id > 0) {
 // If we have not been provided with a room_id
 
 if ($room_id == 0) {
-    $dbroom = $DB->get_records('block_mrbs_nds_room', null, 'room_name', 'id', 0, 1);
+    $dbroom = $DB->get_records('block_mrbs_rlp_room', null, 'room_name', 'id', 0, 1);
     if ($dbroom) {
         $dbroom = reset($dbroom);
         $room_id = $dbroom->id;
@@ -231,7 +231,7 @@ $roomadmin = false;
 if (!getWritable($create_by, getUserID())) {
     if (has_capability('block/mrbs_nds:editmrbs_unconfirmed', $context, null, false)) {
         if ($room_id) {
-            $dbroom = $DB->get_record('block_mrbs_nds_room', ['id' => $room_id]);
+            $dbroom = $DB->get_record('block_mrbs_rlp_room', ['id' => $room_id]);
             if ($dbroom->room_admin_email == $USER->email) {
                 $roomadmin = true;
             }
@@ -487,13 +487,13 @@ if (has_capability("block/mrbs_nds:forcebook", $context)) {
         // Determine the area id of the room in question first
         // room_id may be 0 for a new entry – fall back to the default area.
         $area_id = $room_id
-            ? $DB->get_field('block_mrbs_nds_room', 'area_id', ['id' => $room_id], IGNORE_MISSING)
+            ? $DB->get_field('block_mrbs_rlp_room', 'area_id', ['id' => $room_id], IGNORE_MISSING)
             : null;
         if (!$area_id) {
             $area_id = get_default_area();
         }
         // determine if there is more than one area
-        $areas = $DB->get_records('block_mrbs_nds_area', null, 'area_name');
+        $areas = $DB->get_records('block_mrbs_rlp_area', null, 'area_name');
         // if there is more than one area then give the option
         // to choose areas.
 
@@ -534,7 +534,7 @@ if (has_capability("block/mrbs_nds:forcebook", $context)) {
             //$sql = "select id, room_name from $tbl_room where area_id=$area_id order by room_name";
             // Use URL $area param if provided, otherwise fall back to $area_id.
             $room_area = ($area > 0) ? $area : $area_id;
-            $rooms = $DB->get_records('block_mrbs_nds_room', ['area_id' => $room_area], 'room_name');
+            $rooms = $DB->get_records('block_mrbs_rlp_room', ['area_id' => $room_area], 'room_name');
             
             $i = 0;
             foreach ($rooms as $dbroom) {

@@ -20,7 +20,7 @@ class booking_created extends \core\event\base {
     protected function init() {
         $this->data['crud']        = 'c';
         $this->data['edulevel']    = self::LEVEL_OTHER;
-        $this->data['objecttable'] = 'block_mrbs_nds_entry';
+        $this->data['objecttable'] = 'block_mrbs_rlp_entry';
     }
 
     public static function get_name() {

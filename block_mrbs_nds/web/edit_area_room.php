@@ -72,7 +72,7 @@ require_sesskey();
 // Done changing area or room information?
 if (($change_done)) {
     if (!empty($room)) { // Get the area the room is in
-        $area = $DB->get_field('block_mrbs_nds_room', 'area_id', ['id' => $room]);
+        $area = $DB->get_field('block_mrbs_rlp_room', 'area_id', ['id' => $room]);
     }
     $adminurl = new moodle_url('/blocks/mrbs_nds/web/admin.php', ['day' => $day, 'month' => $month, 'year' => $year, 'area' => $area]);
     redirect($adminurl);
@@ -116,10 +116,10 @@ if ($room > 0) {
         $updroom->room_admin_email = $room_admin_email;
         $updroom->booking_users = $booking_users;
 
-        $DB->update_record('block_mrbs_nds_room', $updroom);
+        $DB->update_record('block_mrbs_rlp_room', $updroom);
     }
 
-    $dbroom = $DB->get_record('block_mrbs_nds_room', ['id' => $room], '*', MUST_EXIST); ?>    
+    $dbroom = $DB->get_record('block_mrbs_rlp_room', ['id' => $room], '*', MUST_EXIST); ?>    
     <form action="<?= $thisurl->out_omit_querystring() ?>" method="post">
     <input type="hidden" name="room" value="<?= $dbroom->id ?>">
     <input type="hidden" name="sesskey" value="<?= sesskey() ?>">
@@ -210,10 +210,10 @@ if ($area) {
         $updarea->id = $area;
         $updarea->area_name = $area_name;
         $updarea->area_admin_email = $area_admin_email;
-        $DB->update_record('block_mrbs_nds_area', $updarea);
+        $DB->update_record('block_mrbs_rlp_area', $updarea);
     }
 
-    $dbarea = $DB->get_record('block_mrbs_nds_area', ['id' => $area], '*', MUST_EXIST); ?>
+    $dbarea = $DB->get_record('block_mrbs_rlp_area', ['id' => $area], '*', MUST_EXIST); ?>
     
     <form action="<?= $thisurl->out_omit_querystring() ?>" method="post">
     <input type="hidden" name="area" value="<?= $dbarea->id ?>">

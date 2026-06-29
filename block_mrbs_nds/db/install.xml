@@ -6,7 +6,7 @@
 >
   <TABLES>
 
-    <TABLE NAME="block_mrbs_nds_area" COMMENT="Booking areas (buildings, departments, etc.)">
+    <TABLE NAME="block_mrbs_rlp_area" COMMENT="Booking areas (buildings, departments, etc.)">
       <FIELDS>
         <FIELD NAME="id"               TYPE="int"  LENGTH="10" NOTNULL="true"  SEQUENCE="true"/>
         <FIELD NAME="area_name"        TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
@@ -17,7 +17,7 @@
       </KEYS>
     </TABLE>
 
-    <TABLE NAME="block_mrbs_nds_room" COMMENT="Bookable rooms / resources per area">
+    <TABLE NAME="block_mrbs_rlp_room" COMMENT="Bookable rooms / resources per area">
       <FIELDS>
         <FIELD NAME="id"               TYPE="int"  LENGTH="10"  NOTNULL="true"  SEQUENCE="true"/>
         <FIELD NAME="area_id"          TYPE="int"  LENGTH="10"  NOTNULL="true"  DEFAULT="0"   SEQUENCE="false"/>
@@ -30,11 +30,11 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary"  TYPE="primary"  FIELDS="id"/>
-        <KEY NAME="fk_areaid" TYPE="foreign" FIELDS="area_id" REFTABLE="block_mrbs_nds_area" REFFIELDS="id"/>
+        <KEY NAME="fk_areaid" TYPE="foreign" FIELDS="area_id" REFTABLE="block_mrbs_rlp_area" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
 
-    <TABLE NAME="block_mrbs_nds_entry" COMMENT="Individual booking entries">
+    <TABLE NAME="block_mrbs_rlp_entry" COMMENT="Individual booking entries">
       <FIELDS>
         <FIELD NAME="id"          TYPE="int"  LENGTH="10" NOTNULL="true"  SEQUENCE="true"/>
         <FIELD NAME="start_time"  TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="0"  SEQUENCE="false"/>
@@ -55,8 +55,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary"    TYPE="primary"  FIELDS="id"/>
-        <KEY NAME="fk_roomid"  TYPE="foreign"  FIELDS="room_id"   REFTABLE="block_mrbs_nds_room"   REFFIELDS="id"/>
-        <KEY NAME="fk_repeatid" TYPE="foreign" FIELDS="repeat_id" REFTABLE="block_mrbs_nds_repeat" REFFIELDS="id"/>
+        <KEY NAME="fk_roomid"  TYPE="foreign"  FIELDS="room_id"   REFTABLE="block_mrbs_rlp_room"   REFFIELDS="id"/>
+        <KEY NAME="fk_repeatid" TYPE="foreign" FIELDS="repeat_id" REFTABLE="block_mrbs_rlp_repeat" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="idx_starttime" UNIQUE="false" FIELDS="start_time"/>
@@ -66,7 +66,7 @@
       </INDEXES>
     </TABLE>
 
-    <TABLE NAME="block_mrbs_nds_repeat" COMMENT="Repeat-booking series definitions">
+    <TABLE NAME="block_mrbs_rlp_repeat" COMMENT="Repeat-booking series definitions">
       <FIELDS>
         <FIELD NAME="id"           TYPE="int"  LENGTH="10" NOTNULL="true"  SEQUENCE="true"/>
         <FIELD NAME="start_time"   TYPE="int"  LENGTH="10" NOTNULL="true"  DEFAULT="0"   SEQUENCE="false"/>
@@ -88,7 +88,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary"   TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_roomid" TYPE="foreign" FIELDS="room_id" REFTABLE="block_mrbs_nds_room" REFFIELDS="id"/>
+        <KEY NAME="fk_roomid" TYPE="foreign" FIELDS="room_id" REFTABLE="block_mrbs_rlp_room" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
 

@@ -117,7 +117,7 @@ if (isset($all_day) && ($all_day == "yes")) {
 }
 
 $sql = "SELECT r.id, r.room_name, r.description, r.capacity, a.area_name, r.area_id";
-$sql .= " FROM {block_mrbs_nds_room} r JOIN {block_mrbs_nds_area} a on r.area_id=a.id WHERE ( SELECT COUNT(*) FROM {block_mrbs_nds_entry} e ";
+$sql .= " FROM {block_mrbs_rlp_room} r JOIN {block_mrbs_rlp_area} a on r.area_id=a.id WHERE ( SELECT COUNT(*) FROM {block_mrbs_rlp_entry} e ";
 
 //old booking fully inside new booking
 $sql .= "WHERE ((e.start_time>= ? AND e.end_time< ? ) ";

@@ -44,7 +44,7 @@ function mrbs_ndsCheckFree(
         $params[] = $repignore;
     }
 
-    $entries = $DB->get_records_select('block_mrbs_nds_entry', $sql, $params, 'start_time');
+    $entries = $DB->get_records_select('block_mrbs_rlp_entry', $sql, $params, 'start_time');
 
     if (empty($entries)) {
         return '';
@@ -93,13 +93,13 @@ function mrbs_ndsDelEntry(
 ): bool {
     global $DB;
 
-    $repeat_id = (int) $DB->get_field('block_mrbs_nds_entry', 'repeat_id', ['id' => $id]);
+    $repeat_id = (int) $DB->get_field('block_mrbs_rlp_entry', 'repeat_id', ['id' => $id]);
     if ($repeat_id < 0) {
         return false;
     }
 
     $params  = $series ? ['repeat_id' => $repeat_id] : ['id' => $id];
-    $entries = $DB->get_records('block_mrbs_nds_entry', $params);
+    $entries = $DB->get_records('block_mrbs_rlp_entry', $params);
     $removed = 0;
 
     foreach ($entries as $entry) {
@@ -109,13 +109,13 @@ function mrbs_ndsDelEntry(
         if ($series && $entry->entry_type == 2 && !$all) {
             continue;
         }
-        $DB->delete_records('block_mrbs_nds_entry', ['id' => $entry->id]);
+        $DB->delete_records('block_mrbs_rlp_entry', ['id' => $entry->id]);
         $removed++;
     }
 
     if ($repeat_id > 0
-            && $DB->count_records('block_mrbs_nds_entry', ['repeat_id' => $repeat_id]) == 0) {
-        $DB->delete_records('block_mrbs_nds_repeat', ['id' => $repeat_id]);
+            && $DB->count_records('block_mrbs_rlp_entry', ['repeat_id' => $repeat_id]) == 0) {
+        $DB->delete_records('block_mrbs_rlp_repeat', ['id' => $repeat_id]);
     }
 
     return $removed > 0;
@@ -152,11 +152,11 @@ function mrbs_ndsCreateSingleEntry(
 
     if ($oldid) {
         $record->id = $oldid;
-        $DB->update_record('block_mrbs_nds_entry', $record);
+        $DB->update_record('block_mrbs_rlp_entry', $record);
         return $oldid;
     }
 
-    return (int) $DB->insert_record('block_mrbs_nds_entry', $record);
+    return (int) $DB->insert_record('block_mrbs_rlp_entry', $record);
 }
 
 /**
@@ -192,11 +192,11 @@ function mrbs_ndsCreateRepeatEntry(
 
     if ($oldrepeatid) {
         $record->id = $oldrepeatid;
-        $DB->update_record('block_mrbs_nds_repeat', $record);
+        $DB->update_record('block_mrbs_rlp_repeat', $record);
         return $oldrepeatid;
     }
 
-    return (int) $DB->insert_record('block_mrbs_nds_repeat', $record);
+    return (int) $DB->insert_record('block_mrbs_rlp_repeat', $record);
 }
 
 // ── Repeat-entry list generation ──────────────────────────────────────────────
@@ -323,17 +323,17 @@ function mrbs_ndsCreateRepeatingEntrys(
 
     $repeatid = 0;
     if ($oldid) {
-        $repeatid = (int) $DB->get_field('block_mrbs_nds_entry', 'repeat_id', ['id' => $oldid]);
+        $repeatid = (int) $DB->get_field('block_mrbs_rlp_entry', 'repeat_id', ['id' => $oldid]);
     }
 
     if (empty($reps)) {
         if ($repeatid) {
             $DB->delete_records_select(
-                'block_mrbs_nds_entry',
+                'block_mrbs_rlp_entry',
                 'repeat_id = :repeatid AND id <> :oldid',
                 ['repeatid' => $repeatid, 'oldid' => $oldid]
             );
-            $DB->delete_records('block_mrbs_nds_repeat', ['id' => $repeatid]);
+            $DB->delete_records('block_mrbs_rlp_repeat', ['id' => $repeatid]);
         }
         $ret->id        = mrbs_ndsCreateSingleEntry(
             $starttime, $endtime, 0, 0, $room_id, $owner, $name, $type, $description, $oldid, $roomchange
@@ -354,7 +354,7 @@ function mrbs_ndsCreateRepeatingEntrys(
         $oldids = [];
         if ($repeatid) {
             $oldids = $DB->get_fieldset_sql(
-                'SELECT id FROM {block_mrbs_nds_entry} WHERE repeat_id = ? ORDER BY start_time',
+                'SELECT id FROM {block_mrbs_rlp_entry} WHERE repeat_id = ? ORDER BY start_time',
                 [$repeatid]
             );
         }
@@ -379,7 +379,7 @@ function mrbs_ndsCreateRepeatingEntrys(
 
         // Delete old repeat entries that are no longer needed.
         for ($i = count($reps); $i < count($oldids); $i++) {
-            $DB->delete_records('block_mrbs_nds_entry', ['id' => (int) $oldids[$i]]);
+            $DB->delete_records('block_mrbs_rlp_entry', ['id' => (int) $oldids[$i]]);
         }
     }
 
@@ -388,10 +388,10 @@ function mrbs_ndsCreateRepeatingEntrys(
 
 function mrbs_ndsGetEntryInfo(int $id): ?stdClass {
     global $DB;
-    return $DB->get_record('block_mrbs_nds_entry', ['id' => $id]) ?: null;
+    return $DB->get_record('block_mrbs_rlp_entry', ['id' => $id]) ?: null;
 }
 
 function mrbs_ndsGetRoomArea(int $room_id): int {
     global $DB;
-    return (int) $DB->get_field('block_mrbs_nds_room', 'area_id', ['id' => $room_id]);
+    return (int) $DB->get_field('block_mrbs_rlp_room', 'area_id', ['id' => $room_id]);
 }

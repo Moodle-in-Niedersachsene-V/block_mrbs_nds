@@ -48,10 +48,10 @@ function mrbs_ndsForceMove($room_id, $starttime, $endtime, $name, $id = null)
         r.description,
         r.area_id,
         a.area_name
-              FROM {block_mrbs_nds_entry} e
-              JOIN {block_mrbs_nds_room} r
+              FROM {block_mrbs_rlp_entry} e
+              JOIN {block_mrbs_rlp_room} r
               ON e.room_id = r.id
-              JOIN {block_mrbs_nds_area} a
+              JOIN {block_mrbs_rlp_area} a
               ON r.area_id = a.id
              WHERE ((e.start_time >= ? AND e.end_time < ?)
              OR (e.start_time < ? AND e.end_time > ?)
@@ -96,12 +96,12 @@ function mrbs_ndsForceMove($room_id, $starttime, $endtime, $name, $id = null)
                                 a.area_name,
                                 IF (r.description = ?, 1, 0) AS sort1,
                                 IF (a.id = ?, 1, 0) AS sort2
-                             FROM {block_mrbs_nds_room} r
-                             JOIN {block_mrbs_nds_area} a
+                             FROM {block_mrbs_rlp_room} r
+                             JOIN {block_mrbs_rlp_area} a
                                 ON r.area_id = a.id
-                             JOIN {block_mrbs_nds_entry} e
+                             JOIN {block_mrbs_rlp_entry} e
                                 ON r.id= e.room_id
-                             WHERE ( SELECT COUNT(*) FROM {block_mrbs_nds_entry} e2
+                             WHERE ( SELECT COUNT(*) FROM {block_mrbs_rlp_entry} e2
                                  WHERE ((e2.start_time >= ? AND e2.end_time < ?)
                                  OR (e2.start_time < ? AND e2.end_time > ?)
                                  OR (e2.start_time < ? AND e2.end_time >= ?))
@@ -154,7 +154,7 @@ function mrbs_ndsForceMove($room_id, $starttime, $endtime, $name, $id = null)
         } else {
             $booking->type = $oldbooking->type;
         }
-        if ($findroomresult_check and $DB->update_record('block_mrbs_nds_entry', $booking) and $oldbookingowner = $DB->get_record('user', ['id' => $oldbooking->create_by])) {
+        if ($findroomresult_check and $DB->update_record('block_mrbs_rlp_entry', $booking) and $oldbookingowner = $DB->get_record('user', ['id' => $oldbooking->create_by])) {
             $message = get_string('bookingmovedmessage', 'block_mrbs_nds', $langvars);
             $output .= '<br>' . get_string('bookingmovedshort', 'block_mrbs_nds', $langvars);
             email_to_user($oldbookingowner, $USER, $subject, $message);

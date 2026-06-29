@@ -64,7 +64,7 @@ if (!getAuthorised(1)) {
 // Check if user is room admin.
 $roomadmin = false;
 if (has_capability('block/mrbs_nds:editmrbs_unconfirmed', $context, null, false)) {
-    $adminemail = $DB->get_field('block_mrbs_nds_room', 'room_admin_email', ['id' => $info->room_id]);
+    $adminemail = $DB->get_field('block_mrbs_rlp_room', 'room_admin_email', ['id' => $info->room_id]);
     if ($adminemail === $USER->email) {
         $roomadmin = true;
     }

@@ -29,6 +29,33 @@ if (!isset($CFG->supportemail)) {
 $cfg_mrbs_nds = get_config('block_mrbs_nds');
 
 $options = [0 => get_string('pagewindow', 'block_mrbs_nds'), 1 => get_string('newwindow', 'block_mrbs_nds')];
+
+    // ── Plugin-Titel Kürzel ───────────────────────────────────────────────────
+    // Dieses Kürzel wird hinter "MRBS Raumbuchung" angezeigt, z.B. "NDS" → "MRBS Raumbuchung NDS"
+    // Leer lassen für keinen Zusatz.
+    $settings->add(new admin_setting_configtext(
+        'block_mrbs_nds/site_suffix',
+        get_string('site_suffix', 'block_mrbs_nds'),
+        get_string('site_suffix_desc', 'block_mrbs_nds'),
+        'NDS',
+        PARAM_ALPHANUM,
+        10
+    ));
+
+    // Live preview of the resulting title
+    $current_suffix = trim((string) get_config('block_mrbs_nds', 'site_suffix'));
+    $preview_base   = get_string('blockname', 'block_mrbs_nds');
+    $preview_title  = $current_suffix !== '' ? $preview_base . ' ' . $current_suffix : $preview_base;
+    $settings->add(new admin_setting_description(
+        'block_mrbs_nds/site_suffix_preview',
+        '',
+        html_writer::tag('div',
+            get_string('site_suffix_preview', 'block_mrbs_nds') . ': ' .
+            html_writer::tag('strong', s($preview_title)),
+            ['class' => 'alert alert-info d-inline-block py-1 px-3 mt-n2 mb-2']
+        )
+    ));
+
 $settings->add(new admin_setting_configselect('newwindow', get_string('config_new_window', 'block_mrbs_nds'), get_string('config_new_window2', 'block_mrbs_nds'), 1, $options));
 $settings->settings->newwindow->plugin = 'block_mrbs_nds';
 

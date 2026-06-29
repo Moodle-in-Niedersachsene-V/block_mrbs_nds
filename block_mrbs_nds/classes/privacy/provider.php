@@ -22,8 +22,8 @@ use core_privacy\local\request\writer;
  * It is required since Moodle 3.5 for DSGVO / GDPR compliance.
  *
  * Personal data stored by this block:
- *  • block_mrbs_nds_entry.create_by  (user.id of booker)
- *  • block_mrbs_nds_repeat.create_by (user.id of series creator)
+ *  • block_mrbs_rlp_entry.create_by  (user.id of booker)
+ *  • block_mrbs_rlp_repeat.create_by (user.id of series creator)
  *  • room.booking_users              (comma-separated user IDs; not exported
  *                                     per-user since it is an admin setting,
  *                                     but mentioned in metadata)
@@ -38,27 +38,27 @@ class provider implements
     public static function get_metadata(collection $collection): collection {
 
         $collection->add_database_table(
-            'block_mrbs_nds_entry',
+            'block_mrbs_rlp_entry',
             [
-                'create_by'   => 'privacy:metadata:block_mrbs_nds_entry:create_by',
-                'name'        => 'privacy:metadata:block_mrbs_nds_entry:name',
-                'description' => 'privacy:metadata:block_mrbs_nds_entry:description',
-                'start_time'  => 'privacy:metadata:block_mrbs_nds_entry:start_time',
-                'end_time'    => 'privacy:metadata:block_mrbs_nds_entry:end_time',
+                'create_by'   => 'privacy:metadata:block_mrbs_rlp_entry:create_by',
+                'name'        => 'privacy:metadata:block_mrbs_rlp_entry:name',
+                'description' => 'privacy:metadata:block_mrbs_rlp_entry:description',
+                'start_time'  => 'privacy:metadata:block_mrbs_rlp_entry:start_time',
+                'end_time'    => 'privacy:metadata:block_mrbs_rlp_entry:end_time',
             ],
-            'privacy:metadata:block_mrbs_nds_entry'
+            'privacy:metadata:block_mrbs_rlp_entry'
         );
 
         $collection->add_database_table(
-            'block_mrbs_nds_repeat',
+            'block_mrbs_rlp_repeat',
             [
-                'create_by'   => 'privacy:metadata:block_mrbs_nds_repeat:create_by',
-                'name'        => 'privacy:metadata:block_mrbs_nds_repeat:name',
-                'description' => 'privacy:metadata:block_mrbs_nds_repeat:description',
-                'start_time'  => 'privacy:metadata:block_mrbs_nds_repeat:start_time',
-                'end_time'    => 'privacy:metadata:block_mrbs_nds_repeat:end_time',
+                'create_by'   => 'privacy:metadata:block_mrbs_rlp_repeat:create_by',
+                'name'        => 'privacy:metadata:block_mrbs_rlp_repeat:name',
+                'description' => 'privacy:metadata:block_mrbs_rlp_repeat:description',
+                'start_time'  => 'privacy:metadata:block_mrbs_rlp_repeat:start_time',
+                'end_time'    => 'privacy:metadata:block_mrbs_rlp_repeat:end_time',
             ],
-            'privacy:metadata:block_mrbs_nds_repeat'
+            'privacy:metadata:block_mrbs_rlp_repeat'
         );
 
         return $collection;
@@ -72,7 +72,7 @@ class provider implements
         // All bookings live in the system context.
         $sql = "SELECT ctx.id
                   FROM {context} ctx
-                  JOIN {block_mrbs_nds_entry} e ON e.create_by = :userid
+                  JOIN {block_mrbs_rlp_entry} e ON e.create_by = :userid
                  WHERE ctx.contextlevel = :contextlevel";
 
         $contextlist->add_from_sql($sql, [
@@ -90,11 +90,11 @@ class provider implements
         }
 
         $sql = "SELECT DISTINCT e.create_by AS userid
-                  FROM {block_mrbs_nds_entry} e";
+                  FROM {block_mrbs_rlp_entry} e";
         $userlist->add_from_sql('userid', $sql, []);
 
         $sql = "SELECT DISTINCT r.create_by AS userid
-                  FROM {block_mrbs_nds_repeat} r";
+                  FROM {block_mrbs_rlp_repeat} r";
         $userlist->add_from_sql('userid', $sql, []);
     }
 
@@ -105,7 +105,7 @@ class provider implements
 
         $userid = $contextlist->get_user()->id;
 
-        $entries = $DB->get_records('block_mrbs_nds_entry', ['create_by' => $userid]);
+        $entries = $DB->get_records('block_mrbs_rlp_entry', ['create_by' => $userid]);
         foreach ($entries as $entry) {
             $context   = \context_system::instance();
             $subcontext = [
@@ -138,8 +138,8 @@ class provider implements
 
         // Anonymise rather than hard-delete, to preserve integrity of
         // room booking history (other users may depend on the calendar).
-        $DB->set_field('block_mrbs_nds_entry',  'create_by', 0, ['create_by' => $userid]);
-        $DB->set_field('block_mrbs_nds_repeat', 'create_by', 0, ['create_by' => $userid]);
+        $DB->set_field('block_mrbs_rlp_entry',  'create_by', 0, ['create_by' => $userid]);
+        $DB->set_field('block_mrbs_rlp_repeat', 'create_by', 0, ['create_by' => $userid]);
     }
 
     public static function delete_data_for_users(approved_userlist $userlist): void {
@@ -153,11 +153,11 @@ class provider implements
         [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
 
         $DB->execute(
-            "UPDATE {block_mrbs_nds_entry} SET create_by = 0 WHERE create_by $insql",
+            "UPDATE {block_mrbs_rlp_entry} SET create_by = 0 WHERE create_by $insql",
             $params
         );
         $DB->execute(
-            "UPDATE {block_mrbs_nds_repeat} SET create_by = 0 WHERE create_by $insql",
+            "UPDATE {block_mrbs_rlp_repeat} SET create_by = 0 WHERE create_by $insql",
             $params
         );
     }

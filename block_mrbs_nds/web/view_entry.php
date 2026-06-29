@@ -40,11 +40,11 @@ $pview  = optional_param('pview',  0, PARAM_INT);
 $context = context_system::instance();
 
 // Phase 1: compare integer IDs.
-if ($record = $DB->get_record('block_mrbs_nds_entry', ['id' => $id])) {
+if ($record = $DB->get_record('block_mrbs_rlp_entry', ['id' => $id])) {
     if ((int) $record->create_by === (int) $USER->id) {
         $redirect = true;
         if (has_capability('block/mrbs_nds:editmrbs_unconfirmed', $context, null, false)) {
-            $adminemail = $DB->get_field('block_mrbs_nds_room', 'room_admin_email',
+            $adminemail = $DB->get_field('block_mrbs_rlp_room', 'room_admin_email',
                                          ['id' => $record->room_id]);
             if ($USER->email !== $adminemail || $record->type !== 'U') {
                 $redirect = false;
@@ -84,10 +84,10 @@ if ($series) {
                    re.start_time, re.end_time,
                    re.rep_type, re.end_date, re.rep_opt, re.rep_num_weeks,
                    u.id AS userid, $namefields
-              FROM {block_mrbs_nds_repeat} re
+              FROM {block_mrbs_rlp_repeat} re
               LEFT JOIN {user} u ON u.id = re.create_by
-              JOIN {block_mrbs_nds_room} r ON r.id = re.room_id
-              JOIN {block_mrbs_nds_area} a ON a.id = r.area_id
+              JOIN {block_mrbs_rlp_room} r ON r.id = re.room_id
+              JOIN {block_mrbs_rlp_area} a ON a.id = r.area_id
              WHERE re.id = ?";
 } else {
     $sql = "SELECT e.name, e.description, e.create_by,
@@ -95,10 +95,10 @@ if ($series) {
                    (e.end_time - e.start_time) duration,
                    e.start_time, e.end_time, e.repeat_id,
                    u.id AS userid, $namefields
-              FROM {block_mrbs_nds_entry} e
+              FROM {block_mrbs_rlp_entry} e
               LEFT JOIN {user} u ON u.id = e.create_by
-              JOIN {block_mrbs_nds_room} r ON r.id = e.room_id
-              JOIN {block_mrbs_nds_area} a ON a.id = r.area_id
+              JOIN {block_mrbs_rlp_room} r ON r.id = e.room_id
+              JOIN {block_mrbs_rlp_area} a ON a.id = r.area_id
              WHERE e.id = ?";
 }
 
@@ -141,10 +141,10 @@ if ($series) {
     $rep_num_weeks = $booking->rep_num_weeks;
     $repeat_id     = false;
 
-    $entry = $DB->get_records('block_mrbs_nds_entry',
+    $entry = $DB->get_records('block_mrbs_rlp_entry',
         ['repeat_id' => $id, 'entry_type' => 1], 'start_time', 'id', 0, 1);
     if (empty($entry)) {
-        $entry = $DB->get_records('block_mrbs_nds_entry',
+        $entry = $DB->get_records('block_mrbs_rlp_entry',
             ['repeat_id' => $id], 'start_time', 'id', 0, 1);
     }
     $entry = reset($entry);
@@ -152,7 +152,7 @@ if ($series) {
 } else {
     $repeat_id = $booking->repeat_id;
     if ($repeat_id) {
-        $repeat = $DB->get_record('block_mrbs_nds_repeat', ['id' => $repeat_id]);
+        $repeat = $DB->get_record('block_mrbs_rlp_repeat', ['id' => $repeat_id]);
         if ($repeat) {
             $rep_type      = $repeat->rep_type;
             $rep_end_date  = userdate($repeat->end_date, get_string('strftimedaydate', 'langconfig'));
@@ -173,7 +173,7 @@ $repeat_key = 'rep_type_' . $rep_type;
 
 $roomadmin = false;
 if (has_capability('block/mrbs_nds:editmrbs_unconfirmed', $context, null, false)) {
-    $adminemail = $DB->get_field('block_mrbs_nds_room', 'room_admin_email', ['id' => $room_id]);
+    $adminemail = $DB->get_field('block_mrbs_rlp_room', 'room_admin_email', ['id' => $room_id]);
     if ($adminemail === $USER->email) {
         $roomadmin = true;
     }

@@ -42,7 +42,7 @@ switch ($default_view) {
 }
 
 if (!empty($default_room)) {
-    $res = $DB->get_record('block_mrbs_nds_room', ['id' => $default_room]);
+    $res = $DB->get_record('block_mrbs_rlp_room', ['id' => $default_room]);
     if (!empty($res)) {
         $redirect->params(['area' => $res->area_id, 'room' => $default_room]);
     }

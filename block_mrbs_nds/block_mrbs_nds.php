@@ -21,8 +21,18 @@ defined('MOODLE_INTERNAL') || die();
 class block_mrbs_nds extends block_base {
 
     public function init(): void {
-        $this->title = get_string('blockname', 'block_mrbs_nds');
+        $this->title = self::get_block_title();
         $this->content_type = BLOCK_TYPE_TEXT;
+    }
+
+    /**
+     * Returns the block title with optional site suffix from admin settings.
+     * e.g. "MRBS Raumbuchung NDS" or just "MRBS Raumbuchung"
+     */
+    public static function get_block_title(): string {
+        $base   = get_string('blockname', 'block_mrbs_nds');
+        $suffix = trim((string) get_config('block_mrbs_nds', 'site_suffix'));
+        return $suffix !== '' ? $base . ' ' . $suffix : $base;
     }
 
     public function has_config(): bool {
@@ -57,6 +67,7 @@ class block_mrbs_nds extends block_base {
             : $CFG->wwwroot . '/blocks/mrbs_nds/web';
 
         $label  = get_string('accessmrbs_nds', 'block_mrbs_nds');
+        $title  = self::get_block_title();
         $icon   = $OUTPUT->pix_icon('web', '', 'block_mrbs_nds', ['height' => '16', 'width' => '16']);
         $target = !empty($cfg->newwindow) ? ' target="_blank" rel="noopener noreferrer"' : '';
 

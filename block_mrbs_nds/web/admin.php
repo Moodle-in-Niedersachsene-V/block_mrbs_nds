@@ -58,7 +58,7 @@ print_header_mrbs_nds($day, $month, $year, isset($area) ? $area : "");
 // If area is set but area name is not known, get the name.
 if ($area) {
     if (empty($area_name)) {
-        $dbarea = $DB->get_record('block_mrbs_nds_area', ['id' => $area], 'area_name', MUST_EXIST);
+        $dbarea = $DB->get_record('block_mrbs_rlp_area', ['id' => $area], 'area_name', MUST_EXIST);
         $area_name = $dbarea->area_name;
     }
 }
@@ -86,7 +86,7 @@ if (isset($area_name)) {
         <div class="col border">
             <?php
             // This cell has the areas
-            $areas = $DB->get_records('block_mrbs_nds_area', null, 'area_name');
+            $areas = $DB->get_records('block_mrbs_rlp_area', null, 'area_name');
 
             if (empty($areas)) {
                 echo get_string('noareas', 'block_mrbs_nds');
@@ -112,7 +112,7 @@ if (isset($area_name)) {
             <?php
 // This one has the rooms
             if ($area) {
-                $rooms = $DB->get_records('block_mrbs_nds_room', ['area_id' => $area], 'room_name');
+                $rooms = $DB->get_records('block_mrbs_rlp_room', ['area_id' => $area], 'room_name');
                 if (empty($rooms)) {
                     //    $res = sql_query("select id, room_name, description, capacity from $tbl_room where area_id=$area order by room_name");
                     echo get_string('norooms', 'block_mrbs_nds');
@@ -198,10 +198,10 @@ $old_mrbs_entry = "block_mrbs_entry";
 $old_mrbs_repeat = "block_mrbs_repeat";
 $old_mrbs_room = "block_mrbs_room";
 
-$mrbs_area = "block_mrbs_nds_area";
-$mrbs_entry = "block_mrbs_nds_entry";
-$mrbs_repeat = "block_mrbs_nds_repeat";
-$mrbs_room = "block_mrbs_nds_room";
+$mrbs_area = "block_mrbs_rlp_area";
+$mrbs_entry = "block_mrbs_rlp_entry";
+$mrbs_repeat = "block_mrbs_rlp_repeat";
+$mrbs_room = "block_mrbs_rlp_room";
 
 $cnt_old_areas = 0;
 $cnt_old_entries = 0;
@@ -282,15 +282,15 @@ if($cnt_entries >= 1 || $cnt_rooms >= 1 || $cnt_areas >= 1 || $cnt_repeats >= 1)
 $chkdelete = optional_param('delete', false, PARAM_BOOL);
 if ($chkdelete === 1 || $chkdelete === true) {
     require_sesskey(); // CSRF-Schutz: serverseitige Prüfung
-    $DB->delete_records('block_mrbs_nds_entry');
+    $DB->delete_records('block_mrbs_rlp_entry');
 }
 
 $chkdelete_all = optional_param('delete_all', false, PARAM_BOOL);
 if ($chkdelete_all === 1 || $chkdelete_all === true) {
     require_sesskey(); // CSRF-Schutz: serverseitige Prüfung
-    $DB->delete_records('block_mrbs_nds_entry');
-    $DB->delete_records('block_mrbs_nds_area');
-    $DB->delete_records('block_mrbs_nds_room');
+    $DB->delete_records('block_mrbs_rlp_entry');
+    $DB->delete_records('block_mrbs_rlp_area');
+    $DB->delete_records('block_mrbs_rlp_room');
 }
 
 // Kopiert die Daten vom alten MRBS zum MRBS RLP (mit ID)
@@ -304,10 +304,10 @@ if ($migrate === 1 || $migrate === true) {
   
   try {
        $transaction = $DB->start_delegated_transaction();
-       $ins_entry = $DB->insert_records('block_mrbs_nds_entry', $old_entries);       
-       $ins_area = $DB->insert_records('block_mrbs_nds_area', $old_areas);                                                                           
-       $ins_room = $DB->insert_records('block_mrbs_nds_room', $old_rooms);       
-       $ins_repeat = $DB->insert_records('block_mrbs_nds_repeat', $old_repeats);      
+       $ins_entry = $DB->insert_records('block_mrbs_rlp_entry', $old_entries);       
+       $ins_area = $DB->insert_records('block_mrbs_rlp_area', $old_areas);                                                                           
+       $ins_room = $DB->insert_records('block_mrbs_rlp_room', $old_rooms);       
+       $ins_repeat = $DB->insert_records('block_mrbs_rlp_repeat', $old_repeats);      
    
        // Assuming the both inserts work, we get to the following line.
        $transaction->allow_commit();

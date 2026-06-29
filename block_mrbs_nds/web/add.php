@@ -50,7 +50,7 @@ require_sesskey();
 if ($type === 'area') {
     $newarea            = new stdClass();
     $newarea->area_name = $name;
-    $area = (int) $DB->insert_record('block_mrbs_nds_area', $newarea);
+    $area = (int) $DB->insert_record('block_mrbs_rlp_area', $newarea);
 }
 
 if ($type === 'room') {
@@ -59,7 +59,7 @@ if ($type === 'room') {
     $newroom->description = $description;
     $newroom->capacity    = $capacity;
     $newroom->area_id     = $area;
-    $DB->insert_record('block_mrbs_nds_room', $newroom);
+    $DB->insert_record('block_mrbs_rlp_room', $newroom);
 }
 
 redirect(new moodle_url('/blocks/mrbs_nds/web/admin.php', ['area' => $area]));
