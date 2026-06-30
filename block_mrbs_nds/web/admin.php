@@ -258,23 +258,69 @@ if($cnt_old_entries >= 1 || $cnt_old_rooms >= 1 || $cnt_old_areas >= 1 || $cnt_o
  }
 
 if($cnt_entries >= 1 || $cnt_rooms >= 1 || $cnt_areas >= 1 || $cnt_repeats >= 1) {
+    // Get the configured suffix for labels
+    $cfg_suffix = trim((string) get_config('block_mrbs_nds', 'site_suffix'));
+    $label = 'MRBS' . ($cfg_suffix !== '' ? ' ' . s($cfg_suffix) : '');
 ?>
-<hr />
-<p><strong>Anzahl Bereiche (MRBS RLP):</strong>&nbsp;<?= $cnt_areas ?><br />
-<strong>Anzahl Ressourcen (MRBS RLP):</strong>&nbsp;<?= $cnt_rooms ?><br />
-<strong>Anzahl Einträge (MRBS RLP):</strong>&nbsp;<?= $cnt_entries ?></p>
+<hr class="my-4">
 
-<button type="button" class="btn btn-danger" 
-        onclick="if (confirm('<?= s(get_string('deleteseries', 'block_mrbs_nds')) ?>?')) {
-                    document.location = '<?= $delurl ?>';
-                }" />
-<?= get_string('deleteseries', 'block_mrbs_nds') ?>?</button>  <em><strong>Warnung:</strong> Dadurch gehen alle Einträge verloren!</em>
+<div class="card border-0 bg-light mb-4">
+    <div class="card-body py-3 px-4">
+        <h6 class="card-title fw-semibold text-secondary mb-3">
+            <?= s(get_string('databasestatus', 'block_mrbs_nds')) ?>
+        </h6>
+        <div class="d-flex flex-wrap gap-3">
+            <div class="text-center px-3 py-2 bg-white rounded border">
+                <div class="fs-4 fw-bold text-primary"><?= (int)$cnt_areas ?></div>
+                <div class="small text-muted"><?= s(get_string('areas', 'block_mrbs_nds')) ?></div>
+            </div>
+            <div class="text-center px-3 py-2 bg-white rounded border">
+                <div class="fs-4 fw-bold text-primary"><?= (int)$cnt_rooms ?></div>
+                <div class="small text-muted"><?= s(get_string('rooms', 'block_mrbs_nds')) ?></div>
+            </div>
+            <div class="text-center px-3 py-2 bg-white rounded border">
+                <div class="fs-4 fw-bold text-primary"><?= (int)$cnt_entries ?></div>
+                <div class="small text-muted"><?= s(get_string('entries', 'block_mrbs_nds')) ?></div>
+            </div>
+            <div class="text-center px-3 py-2 bg-white rounded border">
+                <div class="fs-4 fw-bold text-primary"><?= (int)$cnt_repeats ?></div>
+                <div class="small text-muted"><?= s(get_string('repeats', 'block_mrbs_nds')) ?></div>
+            </div>
+        </div>
+    </div>
+</div>
 
-<br /><br />
-<button type="button" class="btn btn-danger" 
-        onclick="if (confirm('Komplett zurücksetzen?')) {
-                    document.location = '<?= $delallurl ?>';
-                }" />MRBS RLP komplett zurücksetzen?</button>  <em><strong>Warnung:</strong> Dadurch gehen alle Einträge/Bereiche/Ressourcen verloren!</em>
+<div class="card border-danger mb-3">
+    <div class="card-header bg-danger bg-opacity-10 border-danger d-flex align-items-center gap-2">
+        <span class="text-danger fw-semibold"><?= s(get_string('dangerzone', 'block_mrbs_nds')) ?></span>
+    </div>
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 border-bottom">
+            <div>
+                <div class="fw-semibold"><?= s(get_string('deleteentries', 'block_mrbs_nds')) ?></div>
+                <div class="small text-muted"><?= s(get_string('deleteentries_desc', 'block_mrbs_nds')) ?></div>
+            </div>
+            <button type="button" class="btn btn-outline-danger btn-sm"
+                    onclick="if (confirm('<?= s(get_string('confirmdeleteentries', 'block_mrbs_nds')) ?>')) {
+                                document.location = '<?= $delurl ?>';
+                             }">
+                <?= s(get_string('deleteentries_btn', 'block_mrbs_nds')) ?>
+            </button>
+        </div>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 py-2">
+            <div>
+                <div class="fw-semibold"><?= s(get_string('resetall', 'block_mrbs_nds')) ?></div>
+                <div class="small text-muted"><?= s(get_string('resetall_desc', 'block_mrbs_nds')) ?></div>
+            </div>
+            <button type="button" class="btn btn-danger btn-sm"
+                    onclick="if (confirm('<?= s(get_string('confirmresetall', 'block_mrbs_nds')) ?>')) {
+                                document.location = '<?= $delallurl ?>';
+                             }">
+                <?= s(get_string('resetall_btn', 'block_mrbs_nds')) ?>
+            </button>
+        </div>
+    </div>
+</div>
 
 <?php
 }

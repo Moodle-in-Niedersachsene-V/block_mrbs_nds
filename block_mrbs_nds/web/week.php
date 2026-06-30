@@ -89,7 +89,7 @@ $PAGE->set_url($thisurl);
 require_login();
 
 // print the page header
-print_header_mrbs_nds($day, $month, $year, $area);
+print_header_mrbs_nds($day, $month, $year, $area, false, $room);
 
 // Define the start and end of each day of the week in a way which is not
 // affected by daylight saving...
@@ -104,84 +104,52 @@ for ($j = 0; $j <= ($num_of_days - 1); $j++) {
     $pm7[$j] = mktime($eveningends, $eveningends_minutes, 0, $month, $day + $j, $year);
 }
 
-if ($pview != 1) {
-    // Table with areas, rooms, minicals.
-    echo "<table width=\"100%\"><tr class=\"align-top\">";
-    $this_area_name = "";
-    $this_room_name = "";
-
-    // Show all areas
-    echo "<td width=\"30%\"><u>" . get_string('areas', 'block_mrbs_nds') . "</u><br>";
-}
-
-// show either a select box or the normal html list
-if ($area_list_format == "select") {
-    echo make_area_select_html('week.php', $area, $year, $month, $day); // from functions.php
-    $this_area_name = $DB->get_field('block_mrbs_rlp_area', 'area_name', ['id' => $area]);
-    $this_room_name = $DB->get_field('block_mrbs_rlp_room', 'room_name', ['id' => $room]);
-    $this_room_description = $DB->get_field('block_mrbs_rlp_room', 'description', ['id' => $room]);
-} else {
-    $areas = $DB->get_records('block_mrbs_rlp_area', null, 'area_name');
-    foreach ($areas as $dbarea) {
-        if ($pview != 1) {
-            echo '<a href="' . ($baseurl->out(true, ['area' => $dbarea->id])) . '">';
-        }
-        if ($dbarea->id == $area) {
-            $this_area_name = s($dbarea->area_name);
-            if ($pview != 1) {
-                echo "<font color=\"red\">$this_area_name</font></a><br>\n";
-            }
-        } elseif ($pview != 1) {
-            echo s($dbarea->area_name) . "</a><br>\n";
-        }
-    }
-}
-
-if ($pview != 1) {
-    echo "</td>\n";
-
-    // Show all rooms in the current area
-    echo "<td width=\"30%\"><u>" . get_string('rooms', 'block_mrbs_nds') . "</u><br>";
-}
-
-// should we show a drop-down for the room list, or not?
-if ($area_list_format == "select") {
-    echo make_room_select_html('week.php', $area, $room, $year, $month, $day); // from functions.php
-} else {
-    $rooms = $DB->get_records('block_mrbs_rlp_room', ['area_id' => $area], 'room_name');
-    foreach ($rooms as $dbroom) {
-        if ($pview != 1) {
-            echo '<a href="' . ($baseurl->out(true, ['area' => $area, 'room' => $dbroom->id])) . '" title="' . s($dbroom->room_name) . '">';
-        }
-        if ($dbroom->id == $room) {
-            $this_room_name = s($dbroom->room_name);
-            $this_room_description = s($dbroom->description);
-            if ($pview != 1) {
-                echo "<font color=\"red\">$this_room_name</font></a><br>\n";
-            }
-        } elseif ($pview != 1) {
-            echo s($dbroom->room_name) . "</a><br>\n";
-        }
-    }
-} // end select if
-
-if ($pview != 1) {
-    echo "</td>\n";
-
-    //Draw the three month calendars
-    minicals($year, $month, $day, $area, $room, 'week');
-    echo "</tr></table>\n";
-}
+// Fetch area/room names for display
+$this_area_name        = $DB->get_field('block_mrbs_rlp_area', 'area_name', ['id' => $area]) ?: '';
+$this_room_name        = $DB->get_field('block_mrbs_rlp_room', 'room_name', ['id' => $room]) ?: '';
+$this_room_description = $DB->get_field('block_mrbs_rlp_room', 'description', ['id' => $room]) ?: '';
 
 // Don't continue if this area has no rooms:
 if ($room <= 0) {
-    echo "<h1>" . get_string('no_rooms_for_area', 'block_mrbs_nds') . "</h1>";
-    include "trailer.php";
+    echo '<div class="alert alert-info">' . s(get_string('no_rooms_for_area', 'block_mrbs_nds')) . '</div>';
+    require_once __DIR__ . '/trailer.php';
     exit;
 }
 
-// Show area and room:
-echo '<h2 class="mrbs-page-title text-center">' . s($this_area_name) . ' – ' . s($this_room_name) . ($this_room_description ? ' (' . s($this_room_description) . ')' : '') . "</h2>\n";
+if ($pview != 1) {
+    echo '<div class="mrbs-layout">';
+
+    // ── Sidebar ───────────────────────────────────────────────────────────────
+    echo '<div class="mrbs-sidebar">';
+
+    // Areas
+    echo '<div class="mrbs-sidebar-label">' . s(get_string('areas', 'block_mrbs_nds')) . '</div>';
+    $allareas = $DB->get_records('block_mrbs_rlp_area', null, 'area_name');
+    foreach ($allareas as $dbarea) {
+        $areaurl = $baseurl->out(true, ['area' => $dbarea->id, 'room' => 0]);
+        $active  = ($dbarea->id == $area) ? ' active' : '';
+        echo '<a class="mrbs-area-item' . $active . '" href="' . s($areaurl) . '">'
+             . s($dbarea->area_name) . '</a>';
+    }
+
+    // Rooms in current area
+    echo '<div style="margin-top:.6rem">';
+    echo '<div class="mrbs-sidebar-label">' . s(get_string('rooms', 'block_mrbs_nds')) . '</div>';
+    $allrooms = $DB->get_records('block_mrbs_rlp_room', ['area_id' => $area], 'room_name');
+    foreach ($allrooms as $dbroom) {
+        $roomurl = $baseurl->out(true, ['area' => $area, 'room' => $dbroom->id]);
+        $active  = ($dbroom->id == $room) ? ' active' : '';
+        $cap     = $dbroom->capacity > 0
+            ? ' <span class="small text-muted">(' . (int)$dbroom->capacity . ')</span>' : '';
+        echo '<a class="mrbs-area-item' . $active . '" href="' . s($roomurl) . '">'
+             . s($dbroom->room_name) . $cap . '</a>';
+    }
+    echo '</div>';
+    echo '</div>'; // sidebar
+
+    // ── Main content ──────────────────────────────────────────────────────────
+    echo '<div class="mrbs-main">';
+}
 
 //y? are year, month and day of the previous week.
 //t? are year, month and day of the next week.
@@ -197,17 +165,12 @@ $tm = date("m", $i);
 $td = date("d", $i);
 
 if ($pview != 1) {
-    //Show Go to week before and after links
+    // Prev/next navigation now handled by the top nav bar (print_header_mrbs_nds).
+    // Keep URLs for reference by calendar table.
     $thisweekurl = new moodle_url($baseurl, ['area' => $area, 'room' => $room]);
     $thisweekurl->remove_params('day', 'month', 'year');
     $weekbefore = new moodle_url($thisweekurl, ['year' => $yy, 'month' => $ym, 'day' => $yd]);
-    $weekafter = new moodle_url($thisweekurl, ['year' => $ty, 'month' => $tm, 'day' => $td]);
-    echo "<table width=\"100%\"><tr><td>
-      <a href=\"" . $weekbefore . "\">
-      &lt;&lt; " . get_string('weekbefore', 'block_mrbs_nds') . "</a></td>
-      <td align=center><a href=\"" . $thisweekurl . "\">" . get_string('gotothisweek', 'block_mrbs_nds') . "</a></td>
-      <td align=right><a href=\"" . $weekafter . "\">
-      " . get_string('weekafter', 'block_mrbs_nds') . "&gt;&gt;</a></td></tr></table>";
+    $weekafter  = new moodle_url($thisweekurl, ['year' => $ty, 'month' => $tm, 'day' => $td]);
 }
 
 $roomdata = $DB->get_record('block_mrbs_rlp_room', ['id' => $room]);
@@ -407,61 +370,52 @@ for ($t = $starttime; $t <= $endtime; $t += $resolution) {
             $c = $row_class;
         }
 
-        tdcell($c);
-
-        // If the room isnt booked then allow it to be booked
+        // ── Slot rendering ──────────────────────────────────────────────────────
         if (!isset($id)) {
-            $hour = date("H", $t);
+            $hour   = date("H", $t);
             $minute = date("i", $t);
 
-            if ($pview != 1) {
-                if (!$allowedtobook) {
-                    // User not allowed to book this room
-                    echo '<center>';
-                    $title = get_string('notallowedbook', 'block_mrbs_nds', $max_advance_days);
-                    echo '<img src="' . $OUTPUT->image_url('toofaradvance', 'block_mrbs_nds') . '" width="10" height="10" border="0" alt="' . $title . '" title="' . $title . '" />';
-                    echo '</center>';
-                } elseif (!check_max_advance_days($wday, $wmonth, $wyear)) {
-                    // Too far in advance to edit
-                    echo '<center>';
-                    $title = get_string('toofaradvance', 'block_mrbs_nds', $max_advance_days);
-                    echo '<img src="' . $OUTPUT->image_url('toofaradvance', 'block_mrbs_nds') . '" width="10" height="10" border="0" alt="' . $title . '" title="' . $title . '" />';
-                    echo '</center>';
-                } else {
-                    if ($javascript_cursor) {
-                        echo "<SCRIPT>\n<!--\n";
-                        echo "BeginActiveCell();\n";
-                        echo "// -->\n</SCRIPT>";
-                    }
-                    echo "<center>";
-                    $editentry = new moodle_url('/blocks/mrbs_nds/web/edit_entry.php', ['room' => $room, 'area' => $area, 'year' => $wyear,
-                        'month' => $wmonth, 'day' => $wday]);
-                    if ($enable_periods) {
-                        echo '<a href="' . ($editentry->out(true, ['period' => $time_t_stripped])) . '">';
-                    } else {
-                        echo '<a href="' . ($editentry->out(true, ['hour' => $hour, 'minute' => $minute])) . '">';
-                    }
-                    echo '<img src="' . $OUTPUT->image_url('new', 'block_mrbs_nds') . '" width="10" height="10" border="0"></a>';
-                    echo "</center>";
-                    if ($javascript_cursor) {
-                        echo "<SCRIPT>\n<!--\n";
-                        echo "EndActiveCell();\n";
-                        echo "// -->\n</SCRIPT>";
-                    }
-                }
-            } else {
+            if ($pview == 1 || !$allowedtobook || !check_max_advance_days($wday, $wmonth, $wyear)) {
+                tdcell($c);
                 echo '&nbsp;';
+                echo "</td>\n";
+            } else {
+                // Free bookable slot – opens side panel like day.php
+                $editparams = ['room' => $room, 'area' => $area,
+                               'year' => $wyear, 'month' => $wmonth, 'day' => $wday];
+                if ($enable_periods) {
+                    $p_val = ltrim($time_t_stripped, '0') ?: '0';
+                    $editparams['period'] = $p_val;
+                    $timestr_js = addslashes(s($periods[$p_val] ?? $p_val));
+                } else {
+                    $editparams['hour']   = $hour;
+                    $editparams['minute'] = $minute;
+                    $timestr_js = addslashes(s(userdate($t, hour_min_format())));
+                }
+                $editurl_str   = (new moodle_url('/blocks/mrbs_nds/web/edit_entry.php', $editparams))->out(false);
+                $roomname_safe = addslashes(s($this_room_name));
+                $js_url        = str_replace("'", "\'", $editurl_str);
+                $p_arg         = isset($p_val) ? addslashes($p_val) : '';
+                $onclick = "mrbsOpenPanel(this,'$js_url',$room,'$hour','$minute','$p_arg','$roomname_safe','$timestr_js')";
+                echo '<td class="slot free ' . s($c) . '" style="cursor:pointer"'
+                     . ' onclick="' . $onclick . '">&nbsp;</td>' . "\n";
             }
         } elseif ($descr != "") {
-            //if it is booked then show
-            $viewentry = new moodle_url('/blocks/mrbs_nds/web/view_entry.php', ['id' => $id, 'area' => $area, 'day' => $wday,
-                'month' => $wmonth, 'year' => $wyear]);
-            echo ' <a href="' . $viewentry . '" title="' . $long_descr . '">' . $descr . '</a>';
+            // Booked – show entry name as link
+            tdcell($c);
+            $viewentry = new moodle_url('/blocks/mrbs_nds/web/view_entry.php',
+                ['id' => $id, 'area' => $area, 'day' => $wday,
+                 'month' => $wmonth, 'year' => $wyear]);
+            $slot_class = ($c === 'U') ? 'mrbs-slot-name unc' : 'mrbs-slot-name';
+            echo '<a href="' . $viewentry->out(false) . '" style="text-decoration:none;color:inherit;display:block">'
+                 . '<div class="' . $slot_class . '">' . s($descr) . '</div></a>';
+            echo "</td>\n";
         } else {
-            echo "&nbsp;\"&nbsp;";
+            tdcell($c);
+            echo '&nbsp;';
+            echo "</td>\n";
         }
 
-        echo "</td>\n";
     }
 
     // next lines to display times on right side
@@ -482,7 +436,92 @@ for ($t = $starttime; $t <= $endtime; $t += $resolution) {
 }
 echo "</table>";
 
-echo "<hr />";
-show_colour_key();
+if ($pview != 1) {
+    echo '</div>'; // mrbs-main
 
+    // ── Side form panel (same as day.php) ────────────────────────────────────
+    echo '<div class="mrbs-form-panel" id="mrbs-form-panel">';
+    echo '<div class="mrbs-form-panel-head">';
+    echo '<span id="mrbs-panel-title">' . s(get_string('addentry', 'block_mrbs_nds')) . '</span>';
+    echo '<button class="mrbs-form-panel-close" onclick="mrbsClosePanel()" aria-label="Schließen">&#x2715;</button>';
+    echo '</div>';
+
+    $handlerurl = new moodle_url('/blocks/mrbs_nds/web/edit_entry_handler.php');
+    echo '<form id="mrbs-panel-form" method="post" action="' . $handlerurl->out(false) . '">';
+    echo '<input type="hidden" name="sesskey"  value="' . sesskey() . '">';
+    echo '<input type="hidden" name="area"     id="fp_area"   value="' . (int)$area . '">';
+    echo '<input type="hidden" name="day"      id="fp_day"    value="' . (int)$day . '">';
+    echo '<input type="hidden" name="month"    id="fp_month"  value="' . (int)$month . '">';
+    echo '<input type="hidden" name="year"     id="fp_year"   value="' . (int)$year . '">';
+    echo '<input type="hidden" name="room_id"  id="fp_room"   value="">';
+    echo '<input type="hidden" name="hour"     id="fp_hour"   value="">';
+    echo '<input type="hidden" name="minute"   id="fp_minute" value="">';
+    echo '<input type="hidden" name="period"   id="fp_period" value="">';
+    echo '<input type="hidden" name="rooms[]"  id="fp_rooms"  value="">';
+    echo '<input type="hidden" name="create_by" value="' . (int)$USER->id . '">';
+    echo '<input type="hidden" name="edit_type" value="">';
+
+    echo '<div class="mb-2"><label class="form-label">' . s(get_string('namebooker', 'block_mrbs_nds')) . '</label>';
+    echo '<input class="form-control" type="text" name="name" required value="' . s(fullname($USER)) . '"></div>';
+    echo '<div class="mb-2"><label class="form-label">' . s(get_string('description')) . '</label>';
+    echo '<textarea class="form-control" name="description" rows="2"></textarea></div>';
+
+    echo '<div class="mb-2"><label class="form-label">' . s(get_string('duration', 'block_mrbs_nds')) . '</label>';
+    echo '<div class="d-flex gap-1">';
+    echo '<input class="form-control" type="number" name="duration" value="1" min="1" style="width:60px">';
+    echo '<select class="form-control" name="dur_units">';
+    $units_list = $enable_periods ? ['periods', 'days'] : ['minutes', 'hours', 'days'];
+    foreach ($units_list as $u) {
+        echo '<option value="' . s($u) . '">' . s(get_string($u, 'block_mrbs_nds')) . '</option>';
+    }
+    echo '</select></div></div>';
+
+    if (!empty($typel)) {
+        echo '<div class="mb-2"><label class="form-label">' . s(get_string('type', 'block_mrbs_nds')) . '</label>';
+        echo '<select class="form-control" name="type">';
+        foreach ($typel as $tc => $tl) {
+            echo '<option value="' . s($tc) . '">' . s($tl) . '</option>';
+        }
+        echo '</select></div>';
+    }
+
+    echo '<div class="mrbs-form-actions">';
+    echo '<button type="button" class="btn btn-sm btn-outline-secondary" onclick="mrbsClosePanel()">'
+         . s(get_string('cancel', 'core')) . '</button>';
+    echo '<a class="btn btn-sm btn-outline-primary ms-1" id="mrbs-full-form-link" href="#">'
+         . s(get_string('moredetails', 'block_mrbs_nds')) . '</a>';
+    echo '<button type="submit" class="btn btn-sm btn-primary">'
+         . s(get_string('savechanges')) . '</button>';
+    echo '</div>';
+    echo '</form>';
+    echo '</div>'; // mrbs-form-panel
+
+    echo '</div>'; // mrbs-layout
+
+    echo "<script>\n" .
+         "function mrbsOpenPanel(cell,editUrl,roomId,hourVal,minuteVal,periodVal,roomName,timeStr){\n" .
+         "  var panel=document.getElementById('mrbs-form-panel');\n" .
+         "  panel.classList.add('open');\n" .
+         "  document.getElementById('mrbs-panel-title').textContent=roomName+' \u00b7 '+timeStr;\n" .
+         "  document.getElementById('fp_room').value=roomId;\n" .
+         "  document.getElementById('fp_rooms').value=roomId;\n" .
+         "  document.getElementById('fp_hour').value=hourVal;\n" .
+         "  document.getElementById('fp_minute').value=minuteVal;\n" .
+         "  document.getElementById('fp_period').value=periodVal;\n" .
+         "  var url=new URL(editUrl,location.href);\n" .
+         "  var d=url.searchParams.get('day');\n" .
+         "  var m=url.searchParams.get('month');\n" .
+         "  var y=url.searchParams.get('year');\n" .
+         "  if(d)document.getElementById('fp_day').value=d;\n" .
+         "  if(m)document.getElementById('fp_month').value=m;\n" .
+         "  if(y)document.getElementById('fp_year').value=y;\n" .
+         "  document.getElementById('mrbs-full-form-link').href=editUrl;\n" .
+         "}\n" .
+         "function mrbsClosePanel(){\n" .
+         "  document.getElementById('mrbs-form-panel').classList.remove('open');\n" .
+         "}\n" .
+         "</script>\n";
+}
+
+show_colour_key();
 require_once __DIR__ . "/trailer.php";

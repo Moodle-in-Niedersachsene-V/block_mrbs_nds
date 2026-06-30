@@ -30,14 +30,15 @@ $pview = optional_param('pview', 0, PARAM_INT);
 // ── Header / Navigation ───────────────────────────────────────────────────────
 
 function print_user_header_mrbs_nds(
-    ?int $day = null, ?int $month = null, ?int $year = null, ?int $area = null
+    ?int $day = null, ?int $month = null, ?int $year = null,
+    ?int $area = null, ?int $room = null
 ): void {
-    print_header_mrbs_nds($day, $month, $year, $area, true);
+    print_header_mrbs_nds($day, $month, $year, $area, true, $room);
 }
 
 function print_header_mrbs_nds(
     ?int $day = null, ?int $month = null, ?int $year = null,
-    ?int $area = null, bool $userview = false
+    ?int $area = null, bool $userview = false, ?int $room = null
 ): void {
     global $OUTPUT, $PAGE, $USER, $CFG, $search_str, $locale_warning, $pview;
 
@@ -105,19 +106,43 @@ function print_header_mrbs_nds(
     $canadmin    = ($level >= 2);
     $currentpage = basename($_SERVER['PHP_SELF']);
 
-    // Prev / next day links.
-    $prev = mktime(0, 0, 0, $month, $day - 1, $year);
-    $next = mktime(0, 0, 0, $month, $day + 1, $year);
+    // Prev / next navigation – step size depends on current view.
+    // Also carry 'room' parameter for week/userweek views.
+    $room_param = ($room !== null && $room > 0) ? (int)$room : 0;
+
+    switch ($currentpage) {
+        case 'week.php':
+        case 'userweek.php':
+            // Step = 7 days
+            $prev = mktime(0, 0, 0, $month, $day - 7, $year);
+            $next = mktime(0, 0, 0, $month, $day + 7, $year);
+            $datestr = userdate(mktime(0, 0, 0, $month, $day, $year),
+                                get_string('strftimedaydate', 'langconfig'));
+            break;
+        case 'month.php':
+            // Step = 1 month; keep day=1 to avoid month-end confusion
+            $prev = mktime(0, 0, 0, $month - 1, 1, $year);
+            $next = mktime(0, 0, 0, $month + 1, 1, $year);
+            $datestr = userdate(mktime(0, 0, 0, $month, 1, $year),
+                                get_string('strftimemonthyear', 'langconfig'));
+            break;
+        default:
+            // Step = 1 day (day.php, report.php, etc.)
+            $prev = mktime(0, 0, 0, $month, $day - 1, $year);
+            $next = mktime(0, 0, 0, $month, $day + 1, $year);
+            $datestr = userdate(mktime(0, 0, 0, $month, $day, $year),
+                                get_string('strftimedaydate', 'langconfig'));
+            break;
+    }
+
     $prevparams = ['day' => (int)date('d',$prev), 'month' => (int)date('m',$prev), 'year' => (int)date('Y',$prev)];
     $nextparams = ['day' => (int)date('d',$next), 'month' => (int)date('m',$next), 'year' => (int)date('Y',$next)];
-    if ($area) { $prevparams['area'] = $area; $nextparams['area'] = $area; }
-
-    $datestr = userdate(mktime(0, 0, 0, $month, $day, $year),
-                        get_string('strftimedaydate', 'langconfig'));
+    if ($area)       { $prevparams['area'] = $area;       $nextparams['area'] = $area; }
+    if ($room_param) { $prevparams['room'] = $room_param; $nextparams['room'] = $room_param; }
 
     // ── Navigation bar ────────────────────────────────────────────────────
     echo '<div class="mrbs-nav">';
-    echo '<a class="mrbs-nav-title" href="' . s($homeurl) . '">'
+    echo '<a class="mrbs-nav-title" href="' . $homeurl->out(false) . '">'
          . s($title) . '</a>';
 
     // Tabs
@@ -138,7 +163,7 @@ function print_header_mrbs_nds(
 
     foreach ($tabs as $file => [$url, $label]) {
         $active = ($currentpage === $file) ? ' active' : '';
-        echo '<a class="' . $active . '" href="' . s($url) . '">' . s($label) . '</a>';
+        echo '<a class="' . $active . '" href="' . $url->out(false) . '">' . s($label) . '</a>';
     }
     echo '</div>';
 
@@ -148,13 +173,16 @@ function print_header_mrbs_nds(
     echo '<div class="mrbs-date-nav">';
     $prevurl = new moodle_url('/blocks/mrbs_nds/web/' . $currentpage, $prevparams);
     $nexturl = new moodle_url('/blocks/mrbs_nds/web/' . $currentpage, $nextparams);
-    echo '<a class="btn btn-sm btn-outline-secondary py-0 px-2" href="' . s($prevurl) . '">&#8249;</a>';
+    // Use ->out(false) not s(): moodle_url->__toString() already HTML-encodes &
+    // so s() would double-encode to &amp;amp; breaking the URL parameters.
+    echo '<a class="btn btn-sm btn-outline-secondary py-0 px-2" href="' . $prevurl->out(false) . '">&#8249;</a>';
     echo '<span class="mrbs-date-label">' . s($datestr) . '</span>';
-    echo '<a class="btn btn-sm btn-outline-secondary py-0 px-2" href="' . s($nexturl) . '">&#8250;</a>';
+    echo '<a class="btn btn-sm btn-outline-secondary py-0 px-2" href="' . $nexturl->out(false) . '">&#8250;</a>';
     $todayparams = ['day' => (int)date('d'), 'month' => (int)date('m'), 'year' => (int)date('Y')];
-    if ($area) { $todayparams['area'] = $area; }
+    if ($area)       { $todayparams['area'] = $area; }
+    if ($room_param) { $todayparams['room'] = $room_param; }
     $todayurl = new moodle_url('/blocks/mrbs_nds/web/' . $currentpage, $todayparams);
-    echo '<a class="btn btn-sm btn-outline-secondary" href="' . s($todayurl) . '">'
+    echo '<a class="btn btn-sm btn-outline-secondary" href="' . $todayurl->out(false) . '">'
          . s(get_string('gototoday', 'block_mrbs_nds')) . '</a>';
     echo '</div>';
 
@@ -166,11 +194,11 @@ function print_header_mrbs_nds(
     ];
     foreach ($views as $file => [$url, $label]) {
         $active = ($currentpage === $file) ? ' active' : '';
-        echo '<a class="' . $active . '" href="' . s($url) . '">' . s($label) . '</a>';
+        echo '<a class="' . $active . '" href="' . $url->out(false) . '">' . s($label) . '</a>';
     }
     echo '</div>';
 
-    echo '<a class="btn btn-sm btn-primary" href="' . s($editurl) . '">'
+    echo '<a class="btn btn-sm btn-primary" href="' . $editurl->out(false) . '">'
          . '+ ' . s(get_string('addentry', 'block_mrbs_nds')) . '</a>';
 
     echo '</div>'; // mrbs-nav-right

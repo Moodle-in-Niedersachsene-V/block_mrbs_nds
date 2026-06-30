@@ -392,3 +392,18 @@ $string['mrbs_nds:ignoremaxadvancedays']  = 'Ignore maximum advance days restric
 $string['site_suffix']      = 'Title suffix / abbreviation';
 $string['site_suffix_desc'] = 'Displayed after "MRBS Room Booking". Example: "NDS" results in "MRBS Room Booking NDS". Leave empty for no suffix.';
 $string['site_suffix_preview'] = 'Title preview';
+
+// ── Admin: database status and danger zone ────────────────────────────────────
+$string['databasestatus']        = 'Database status';
+$string['rooms']                 = 'Resources';
+$string['entries']               = 'Entries';
+$string['repeats']               = 'Series';
+$string['dangerzone']            = 'Danger zone';
+$string['deleteentries']         = 'Delete all entries';
+$string['deleteentries_desc']    = 'Deletes all booking entries. Areas and resources are kept.';
+$string['deleteentries_btn']     = 'Delete entries';
+$string['confirmdeleteentries']  = 'Really delete all entries? This cannot be undone.';
+$string['resetall']              = 'Reset everything';
+$string['resetall_desc']         = 'Deletes all entries, areas and resources. The database will be completely emptied.';
+$string['resetall_btn']          = 'Reset all';
+$string['confirmresetall']       = 'Really reset everything? All entries, areas and resources will be permanently deleted.';

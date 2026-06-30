@@ -394,3 +394,18 @@ $string['mrbs_nds:ignoremaxadvancedays']  = 'Vorlaufzeit-Beschränkung ignoriere
 $string['site_suffix']      = 'Kürzel / Zusatz im Titel';
 $string['site_suffix_desc'] = 'Wird hinter "MRBS Raumbuchung" angezeigt. Beispiel: "NDS" ergibt den Titel "MRBS Raumbuchung NDS". Leer lassen für keinen Zusatz.';
 $string['site_suffix_preview'] = 'Vorschau Titel';
+
+// ── Admin: Datenbankstatus und Gefahrenzone ───────────────────────────────────
+$string['databasestatus']        = 'Datenbankstatus';
+$string['rooms']                 = 'Ressourcen';
+$string['entries']               = 'Einträge';
+$string['repeats']               = 'Serien';
+$string['dangerzone']            = 'Gefahrenzone';
+$string['deleteentries']         = 'Alle Einträge löschen';
+$string['deleteentries_desc']    = 'Löscht alle Buchungseinträge. Bereiche und Ressourcen bleiben erhalten.';
+$string['deleteentries_btn']     = 'Einträge löschen';
+$string['confirmdeleteentries']  = 'Wirklich alle Einträge löschen? Dies kann nicht rückgängig gemacht werden.';
+$string['resetall']              = 'Komplett zurücksetzen';
+$string['resetall_desc']         = 'Löscht alle Einträge, Bereiche und Ressourcen. Die Datenbank wird vollständig geleert.';
+$string['resetall_btn']          = 'Alles zurücksetzen';
+$string['confirmresetall']       = 'Wirklich alles zurücksetzen? Alle Einträge, Bereiche und Ressourcen werden unwiderruflich gelöscht.';

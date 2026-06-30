@@ -17,11 +17,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin            = new stdClass();
-$plugin->version   = 2026062725;          // YYYYMMDDNN – increment NN for same-day releases
+$plugin->version   = 2026062732;          // YYYYMMDDNN – increment NN for same-day releases
 $plugin->requires  = 2024100700;          // Moodle 4.5+ (minimum tested); Moodle 5.0 recommended
 $plugin->component = 'block_mrbs_nds';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '2.0.0 (Build: 2026062725)';
+$plugin->release   = '2.0.0 (Build: 2026062732)';
 $plugin->cron      = 0;                   // Moodle 5: must be explicitly 0 (cron replaced by scheduled task)
 
 // Migration: this plugin supersedes block_mrbs_rlp.

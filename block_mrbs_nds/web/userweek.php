@@ -94,7 +94,7 @@ $PAGE->set_url($thisurl);
 require_login();
 
 // print the page header
-print_user_header_mrbs_nds($day, $month, $year, $area);
+print_user_header_mrbs_nds($day, $month, $year, $area, $room);
 
 if ($CFG->version < 2011120100) {
     $context = get_context_instance(CONTEXT_SYSTEM);
@@ -120,20 +120,38 @@ for ($j = 0; $j <= ($num_of_days - 1); $j++) {
     $pm7[$j] = mktime($eveningends, $eveningends_minutes, 0, $month, $day + $j, $year);
 }
 
+// ── New sidebar layout ────────────────────────────────────────────────────────
 if ($pview != 1) {
-    // Table with areas, rooms, minicals.
-    echo "<table width=\"100%\"><tr><td width=60%>";
-    echo "</td>\n";
-
-    //Draw the three month calendars
-    minicals($year, $month, $day, $area, $room, 'week', $user);
-    echo "</tr></table>\n";
+    echo '<div class="mrbs-layout">';
+    echo '<div class="mrbs-sidebar">';
+    echo '<div class="mrbs-sidebar-label">' . s(get_string('areas', 'block_mrbs_nds')) . '</div>';
+    $allareas = $DB->get_records('block_mrbs_rlp_area', null, 'area_name');
+    foreach ($allareas as $dbarea) {
+        $aurl   = new moodle_url('/blocks/mrbs_nds/web/userweek.php',
+                      ['day' => $day, 'month' => $month, 'year' => $year,
+                       'area' => $dbarea->id, 'room' => 0]);
+        $active = ($dbarea->id == $area) ? ' active' : '';
+        echo '<a class="mrbs-area-item' . $active . '" href="' . s($aurl) . '">'
+             . s($dbarea->area_name) . '</a>';
+    }
+    echo '<div style="margin-top:.6rem">';
+    echo '<div class="mrbs-sidebar-label">' . s(get_string('rooms', 'block_mrbs_nds')) . '</div>';
+    $allrooms = $DB->get_records('block_mrbs_rlp_room', ['area_id' => $area], 'room_name');
+    foreach ($allrooms as $dbroom) {
+        $rurl   = new moodle_url('/blocks/mrbs_nds/web/userweek.php',
+                      ['day' => $day, 'month' => $month, 'year' => $year,
+                       'area' => $area, 'room' => $dbroom->id]);
+        $active = ($dbroom->id == $room) ? ' active' : '';
+        $cap    = $dbroom->capacity > 0
+            ? ' <span class="small text-muted">(' . (int)$dbroom->capacity . ')</span>' : '';
+        echo '<a class="mrbs-area-item' . $active . '" href="' . s($rurl) . '">'
+             . s($dbroom->room_name) . $cap . '</a>';
+    }
+    echo '</div>';
+    echo '</div>'; // sidebar
+    echo '<div class="mrbs-main">';
 }
 
-
-
-// Show area and room:
-echo '<h2 class="mrbs-page-title text-center">' . get_string('ttfor', 'block_mrbs_nds') . $TTUSER->firstname . ' ' . $TTUSER->lastname . '</h2>';
 
 //y? are year, month and day of the previous week.
 //t? are year, month and day of the next week.
@@ -422,10 +440,11 @@ for ($t = $starttime; $t <= $endtime; $t += $resolution) {
 }
 echo "</table>";
 
+if ($pview != 1) {
+    echo '</div>'; // mrbs-main
+    echo '</div>'; // mrbs-layout
+}
+
 show_colour_key();
 
-//include "trailer.php";
-
-echo '</div>';  // Close 'mrbs_rlpcontainer'
-
-echo $OUTPUT->footer();
+require_once __DIR__ . '/trailer.php';

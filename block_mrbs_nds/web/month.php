@@ -63,7 +63,7 @@ $PAGE->set_url($thisurl);
 require_login();
 
 // print the page header
-print_header_mrbs_nds($day, $month, $year, $area);
+print_header_mrbs_nds($day, $month, $year, $area, false, $room);
 
 // Month view start time. This ignores morningstarts/eveningends because it
 // doesn't make sense to not show all entries for the day, and it messes
