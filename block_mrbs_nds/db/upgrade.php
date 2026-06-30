@@ -53,22 +53,37 @@ function xmldb_block_mrbs_nds_upgrade(int $oldversion): bool {
     if ($oldversion < 2026062725) {
 
         // ── 1. Normalise create_by to INT user.id where still VARCHAR ─────────
-        // Check if create_by contains non-numeric values (old username format).
+        // Filtering is done in PHP (ctype_digit) rather than SQL REGEXP, since
+        // REGEXP syntax differs between MariaDB/MySQL and PostgreSQL. This keeps
+        // upgrade.php fully database-engine agnostic per Moodle's DB abstraction.
         $tables = ['block_mrbs_rlp_entry', 'block_mrbs_rlp_repeat'];
         foreach ($tables as $table) {
             if (!$dbman->table_exists(new xmldb_table($table))) {
                 continue;
             }
-            // Find records where create_by is not a pure integer string.
-            $records = $DB->get_records_sql(
-                "SELECT id, create_by FROM {{$table}}
-                  WHERE create_by != '' AND create_by NOT REGEXP '^[0-9]+$'
-                  LIMIT 500"
+
+            $rs = $DB->get_recordset_select(
+                $table,
+                "create_by != ''",
+                [],
+                'id',
+                'id, create_by'
             );
-            foreach ($records as $rec) {
-                $uid = block_mrbs_nds_resolve_create_by((string) $rec->create_by);
-                $DB->set_field($table, 'create_by', $uid, ['id' => $rec->id]);
+
+            $processed = 0;
+            foreach ($rs as $rec) {
+                // Only touch rows where create_by is NOT already a pure integer.
+                if (!ctype_digit((string) $rec->create_by)) {
+                    $uid = block_mrbs_nds_resolve_create_by((string) $rec->create_by);
+                    $DB->set_field($table, 'create_by', $uid, ['id' => $rec->id]);
+                }
+                // Safety cap to avoid excessive runtime on very large tables;
+                // remaining rows are picked up on the next cron/upgrade pass.
+                if (++$processed >= 2000) {
+                    break;
+                }
             }
+            $rs->close();
         }
 
         // ── 2. Migrate plugin settings from old component name ─────────────────
