@@ -19,7 +19,6 @@ require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php'); //fo
 require_once __DIR__ . "/config.inc.php";
 require_once __DIR__ . "/functions.php";
 require_once('mrbs_nds_auth.php');
-require_once __DIR__ . "/mincals.php";
 
 $month = optional_param('month', date("m"), PARAM_INT);
 $year = optional_param('year', date("Y"), PARAM_INT);
@@ -102,109 +101,48 @@ for ($j = 1; $j <= $days_in_month; $j++) {
     }
 }
 
-if ($pview != 1) {
-    //UT
-    // Table with areas, rooms, minicals.
-    echo '<table width="100%"><tr>';
-    $this_area_name = "";
-    $this_room_name = "";
-
-    // Show all areas
-    echo '<td width="30%"><u>' . get_string('areas', 'block_mrbs_nds') . '</u><br>';
-}
-
-// show either a select box or the normal html list
-if ($area_list_format == "select") {
-    echo make_area_select_html('month.php', $area, $year, $month, $day); // from functions.php
-    $this_area_name = s($DB->get_field('block_mrbs_rlp_area', 'area_name', ['id' => $area]));
-    $this_room_name = s($DB->get_field('block_mrbs_rlp_room', 'room_name', ['id' => $room]));
-} else {
-    $dbareas = $DB->get_records('block_mrbs_rlp_area', null, 'area_name');
-    $areaurl = new moodle_url($baseurl);
-    foreach ($dbareas as $dbarea) {
-        if ($pview != 1) {
-            $areaurl->param('area', $dbarea->id);
-            echo '<a href="' . $areaurl . '">';
-        }
-        if ($dbarea->id == $area) {
-            $this_area_name = s($dbarea->area_name);
-            if ($pview != 1) {
-                echo '<font color="red">' . $this_area_name . "</font></a><br>\n";
-            }
-        } elseif ($pview != 1) {
-            echo s($dbarea->area_name) . "</a><br>\n";
-        }
-    }
-}
-
-if ($pview != 1) {
-    echo "</td>\n";
-
-    // Show all rooms in the current area:
-    echo '<td width="30%"><u>' . get_string('rooms', 'block_mrbs_nds') . "</u><br>";
-}
-
-
-// should we show a drop-down for the room list, or not?
-if ($area_list_format == "select") {
-    echo make_room_select_html('month.php', $area, $room, $year, $month, $day); // from functions.php
-} else {
-    $rooms = $DB->get_records('block_mrbs_rlp_room', ['area_id' => $area], 'room_name');
-    $roomurl = new moodle_url($baseurl, ['area' => $area]);
-    foreach ($rooms as $dbroom) {
-        $roomurl->param('room', $dbroom->id);
-        echo '<a href="' . $roomurl . '">';
-        if ($dbroom->id == $room) {
-            $this_room_name = s($dbroom->room_name);
-            if ($pview != 1) {
-                echo '<font color="red">' . $this_room_name . "</font></a><br>\n";
-            }
-        } elseif ($pview != 1) {
-            echo s($dbroom->room_name) . "</a><br>\n";
-        }
-    }
-}
-
-if ($pview != 1) {
-    echo "</td>\n";
-
-    //Draw the three month calendars
-    minicals($year, $month, $day, $area, $room, 'month');
-    echo "</tr></table>\n";
-}
+// Fetch area/room names for display
+$this_area_name = $DB->get_field('block_mrbs_rlp_area', 'area_name', ['id' => $area]) ?: '';
+$this_room_name = $DB->get_field('block_mrbs_rlp_room', 'room_name', ['id' => $room]) ?: '';
 
 // Don't continue if this area has no rooms:
 if ($room <= 0) {
-    echo $OUTPUT->heading(get_string('no_rooms_for_area', 'block_mrbs_nds'));
-    include "trailer.php";
+    echo '<div class="alert alert-info">' . s(get_string('no_rooms_for_area', 'block_mrbs_nds')) . '</div>';
+    require_once __DIR__ . '/trailer.php';
     exit;
 }
 
-// Show Month, Year, Area, Room header:
-echo '<h2 class="mrbs-page-title text-center">' . userdate($month_start, get_string('strftimemonthyear', 'langconfig'))
- . " - $this_area_name - $this_room_name</h2>\n";
-
-// Show Go to month before and after links
-//y? are year and month of the previous month.
-//t? are year and month of the next month.
-
-$i = mktime(12, 0, 0, $month - 1, 1, $year);
-$yy = date("Y", $i);
-$ym = date("n", $i);
-
-$i = mktime(12, 0, 0, $month + 1, 1, $year);
-$ty = date("Y", $i);
-$tm = date("n", $i);
 if ($pview != 1) {
-    $thismonth = new moodle_url($baseurl, ['area' => $area, 'room' => $room]);
-    $thismonth->remove_params('month', 'year');
-    $monthbefore = new moodle_url($thismonth, ['month' => $ym, 'year' => $yy]);
-    $monthafter = new moodle_url($thismonth, ['month' => $tm, 'year' => $ty]);
-    echo '<table width="100%"><tr>';
-    echo '<td><a href="' . $monthbefore . '">&lt;&lt;' . get_string('monthbefore', 'block_mrbs_nds') . '</a></td>';
-    echo '<td align=center><a href="' . $thismonth . '">' . get_string('gotothismonth', 'block_mrbs_nds') . '</a></td>';
-    echo '<td align=right><a href="' . $monthafter . '">' . get_string('monthafter', 'block_mrbs_nds') . '&gt;&gt;</a></td>';
-    echo '</tr></table>';
+    echo '<div class="mrbs-layout">';
+
+    // ── Sidebar ───────────────────────────────────────────────────────────────
+    echo '<div class="mrbs-sidebar">';
+
+    echo '<div class="mrbs-sidebar-label">' . s(get_string('areas', 'block_mrbs_nds')) . '</div>';
+    $allareas = $DB->get_records('block_mrbs_rlp_area', null, 'area_name');
+    foreach ($allareas as $dbarea) {
+        $areaurl = $baseurl->out(true, ['area' => $dbarea->id, 'room' => 0]);
+        $active  = ($dbarea->id == $area) ? ' active' : '';
+        echo '<a class="mrbs-area-item' . $active . '" href="' . s($areaurl) . '">'
+             . s($dbarea->area_name) . '</a>';
+    }
+
+    echo '<div style="margin-top:.6rem">';
+    echo '<div class="mrbs-sidebar-label">' . s(get_string('rooms', 'block_mrbs_nds')) . '</div>';
+    $allrooms = $DB->get_records('block_mrbs_rlp_room', ['area_id' => $area], 'room_name');
+    foreach ($allrooms as $dbroom) {
+        $roomurl = $baseurl->out(true, ['area' => $area, 'room' => $dbroom->id]);
+        $active  = ($dbroom->id == $room) ? ' active' : '';
+        $cap     = $dbroom->capacity > 0
+            ? ' <span class="small text-muted">(' . (int)$dbroom->capacity . ')</span>' : '';
+        echo '<a class="mrbs-area-item' . $active . '" href="' . s($roomurl) . '">'
+             . s($dbroom->room_name) . $cap . '</a>';
+    }
+    echo '</div>';
+    echo '</div>'; // sidebar
+
+    echo '<div class="mrbs-main">';
+    echo '<h3 class="mrbs-section-title mb-2">' . s($this_area_name) . ' â ' . s($this_room_name) . '</h3>';
 }
 
 if ($debug_flag) {
@@ -317,131 +255,87 @@ if ($debug_flag) {
 }
 
 // Include the active cell content management routines.
-// Must be included before the beginnning of the main table.
-if ($javascript_cursor) { // If authorized in config.inc.php, include the javascript cursor management.
-    echo "<SCRIPT>InitActiveCell("
-    . ($show_plus_link ? "true" : "false") . ", "
-    . "false, "
-    . "false, "
-    . "\"$highlight_method\", "
-    . "\"" . get_string('click_to_reserve', 'block_mrbs_nds') . "\""
-    . ");</SCRIPT>\n";
-}
+$today_day   = (int) date('j');
+$today_month = (int) date('n');
+$today_year  = (int) date('Y');
+$is_current_month = ($month == $today_month && $year == $today_year);
 
-echo "<table border=\"1\" cellspacing=\"0\" width=\"100%\">\n<tr>";
-// Weekday name header row:
+echo '<table class="mrbs-month-grid">';
+echo '<tr>';
 for ($weekcol = 0; $weekcol < 7; $weekcol++) {
-    echo "<th width=\"14%\">" . day_name(($weekcol + $weekstarts) % 7) . "</th>";
+    $wd = ($weekcol + $weekstarts) % 7;
+    echo '<th>' . s(day_name($wd)) . '</th>';
 }
-echo "</tr><tr>\n";
+echo '</tr><tr>';
 
-// Skip days in week before start of month:
+// Skip days in week before start of month (previous month, shown dimmed).
+$prev_month_days = (int) date('t', mktime(0, 0, 0, $month - 1, 1, $year));
 for ($weekcol = 0; $weekcol < $weekday_start; $weekcol++) {
-    echo "<td bgcolor=\"#cccccc\" height=100>&nbsp;</td>\n";
+    $pmday = $prev_month_days - $weekday_start + $weekcol + 1;
+    echo '<td class="other-month"><div class="mrbs-day-num">' . (int)$pmday . '</div></td>';
 }
 
-$roomdata = $DB->get_record('block_mrbs_rlp_room', ['id' => $room]);
+$roomdata      = $DB->get_record('block_mrbs_rlp_room', ['id' => $room]);
 $allowedtobook = allowed_to_book($USER, $roomdata);
 
-// Draw the days of the month:
 for ($cday = 1; $cday <= $days_in_month; $cday++) {
-    if ($weekcol == 0) {
-        echo "</tr><tr>\n";
+    if ($weekcol == 0 && $cday > 1) {
+        echo '</tr><tr>';
     }
-    $dayurl = new moodle_url('/blocks/mrbs_nds/web/day.php', ['year' => $year, 'month' => $month, 'day' => $cday, 'area' => $area]);
-    echo "<td valign=top height=100 class=\"month\"><div class=\"monthday\"><a href=\"" . $dayurl . "\">$cday</a>&nbsp;\n";
-    echo "</div>";
 
-    // Anything to display for this day?
-    if (isset($d[$cday]["id"][0])) {
-        echo "<font size=-2>";
-        $n = count($d[$cday]["id"]);
-        // Show the start/stop times, 2 per line, linked to view_entry.
-        // If there are 12 or fewer, show them, else show 11 and "...".
+    $is_today  = ($is_current_month && $cday == $today_day);
+    $td_class  = $is_today ? 'today' : '';
+
+    $dayurl = new moodle_url('/blocks/mrbs_nds/web/day.php',
+        ['year' => $year, 'month' => $month, 'day' => $cday, 'area' => $area, 'room' => $room]);
+
+    echo '<td class="' . $td_class . '" style="cursor:pointer" onclick="location.href=\''
+         . $dayurl->out(false) . '\'">';
+
+    $num_class = $is_today ? 'mrbs-day-num text-primary fw-bold' : 'mrbs-day-num';
+    echo '<div class="' . $num_class . '">' . (int)$cday . '</div>';
+
+    // Show entries for this day.
+    if (isset($d[$cday]['id'][0])) {
+        $n = count($d[$cday]['id']);
+        $shown = 0;
         for ($i = 0; $i < $n; $i++) {
-            if (($i == 11 && $n > 12 && $monthly_view_entries_details != "both") or ($i == 6 && $n > 6 && $monthly_view_entries_details == "both")) {
-                echo " ...\n";
+            if ($shown >= 3 && $n > 4) {
+                echo '<div class="small text-muted">+' . ($n - $shown) . ' ' . s(get_string('more', 'core')) . '</div>';
                 break;
             }
-            if (($i > 0 && $i % 2 == 0) or ($monthly_view_entries_details == "both" && $i > 0)) {
-                echo "<br>";
-            } else {
-                echo " ";
-            }
-
-            $viewentry_url = new moodle_url('/blocks/mrbs_nds/web/view_entry.php', ['id' => $d[$cday]['id'][$i], 'day' => $cday, 'month' => $month, 'year' => $year]);
-            switch ($monthly_view_entries_details) {
-                case "description": {
-                        echo "<a href=\"" . $viewentry_url . "\" title=\""
-                        . s($d[$cday]["data"][$i]) . "\">"
-                        . s(substr($d[$cday]["shortdescrip"][$i], 0, 17))
-                        . "</a>";
-                        break;
-                    }
-                case "slot": {
-                        echo "<a href=\"" . $viewentry_url . "\" title=\""
-                        . s(substr($d[$cday]["shortdescrip"][$i], 0, 17)) . "\">"
-                        . s($d[$cday]["data"][$i]) . "</a>";
-                        break;
-                    }
-                case "both": {
-                        echo "<a href=\"" . $viewentry_url . "\" title=\"\">"
-                        . s($d[$cday]["data"][$i]) . " "
-                        . s(substr($d[$cday]["shortdescrip"][$i], 0, 6)) . "</a>";
-                        break;
-                    }
-                default: {
-                        echo "error: unknown parameter";
-                    }
-            }
+            $viewentry_url = new moodle_url('/blocks/mrbs_nds/web/view_entry.php',
+                ['id' => $d[$cday]['id'][$i], 'day' => $cday, 'month' => $month, 'year' => $year]);
+            $title_attr = s(substr($d[$cday]['shortdescrip'][$i], 0, 60));
+            echo '<a href="' . $viewentry_url->out(false) . '" class="mrbs-month-event"'
+                 . ' title="' . $title_attr . '" onclick="event.stopPropagation()">'
+                 . s(substr($d[$cday]['shortdescrip'][$i], 0, 18)) . '</a>';
+            $shown++;
         }
-        echo "</font>";
     }
 
-    echo "<br>";
-    if ($pview != 1) {
-        if (!$allowedtobook) {
-            // No permission to book this room
-            $title = get_string('notallowedbook', 'block_mrbs_nds');
-            echo '<img src="' . $OUTPUT->image_url('toofaradvance', 'block_mrbs_nds') . '" width="10" height="10" border="0" alt="' . $title . '" title="' . $title . '" />';
-        } elseif (!check_max_advance_days($cday, $month, $year)) {
-            // Too far in advance to edit
-            $title = get_string('toofaradvance', 'block_mrbs_nds', $max_advance_days);
-            echo '<img src="' . $OUTPUT->image_url('toofaradvance', 'block_mrbs_nds') . '" width="10" height="10" border="0" alt="' . $title . '" title="' . $title . '" />';
-        } else {
-            if ($javascript_cursor) {
-                echo "<SCRIPT>\n<!--\n";
-                echo "BeginActiveCell();\n";
-                echo "// -->\n</SCRIPT>";
-            }
-            $editurl = new moodle_url('/blocks/mrbs_nds/web/edit_entry.php', ['room' => $room, 'area' => $area, 'year' => $year, 'month' => $month, 'day' => $cday]);
-            if ($enable_periods) {
-                echo '<a href="' . ($editurl->out(true, ['period' => 0])) . '">';
-            } else {
-                echo '<a href="' . ($editurl->out(true, ['hour' => $morningstarts, 'minute' => 0])) . '">';
-            }
-            echo '<img src="' . $OUTPUT->image_url('new', 'block_mrbs_nds') . '" width="10" height="10" border="0"></a>';
-            if ($javascript_cursor) {
-                echo "<SCRIPT>\n<!--\n";
-                echo "EndActiveCell();\n";
-                echo "// -->\n</SCRIPT>";
-            }
-        }
-    } else {
-        echo '&nbsp;';
-    }
-    echo "</td>\n";
+    echo '</td>';
+
     if (++$weekcol == 7) {
         $weekcol = 0;
     }
 }
 
-// Skip from end of month to end of week:
+// Skip from end of month to end of week (next month, shown dimmed).
 if ($weekcol > 0) {
+    $nmday = 1;
     for (; $weekcol < 7; $weekcol++) {
-        echo "<td bgcolor=\"#cccccc\" height=100>&nbsp;</td>\n";
+        echo '<td class="other-month"><div class="mrbs-day-num">' . (int)$nmday . '</div></td>';
+        $nmday++;
     }
 }
-echo "</tr></table>\n";
+echo '</tr></table>';
+
+if ($pview != 1) {
+    echo '</div>'; // mrbs-main
+    echo '</div>'; // mrbs-layout
+}
+
+show_colour_key();
 
 require_once __DIR__ . "/trailer.php";
