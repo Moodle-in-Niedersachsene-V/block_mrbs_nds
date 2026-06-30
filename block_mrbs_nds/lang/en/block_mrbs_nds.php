@@ -407,3 +407,7 @@ $string['resetall']              = 'Reset everything';
 $string['resetall_desc']         = 'Deletes all entries, areas and resources. The database will be completely emptied.';
 $string['resetall_btn']          = 'Reset all';
 $string['confirmresetall']       = 'Really reset everything? All entries, areas and resources will be permanently deleted.';
+$string['to'] = 'To';
+$string['search_period_hint'] = 'Searches reservation name, description and booker within the selected period.';
+$string['allrooms'] = 'All resources';
+$string['alltypes'] = 'All types';

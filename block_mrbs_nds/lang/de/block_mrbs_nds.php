@@ -409,3 +409,7 @@ $string['resetall']              = 'Komplett zurücksetzen';
 $string['resetall_desc']         = 'Löscht alle Einträge, Bereiche und Ressourcen. Die Datenbank wird vollständig geleert.';
 $string['resetall_btn']          = 'Alles zurücksetzen';
 $string['confirmresetall']       = 'Wirklich alles zurücksetzen? Alle Einträge, Bereiche und Ressourcen werden unwiderruflich gelöscht.';
+$string['to'] = 'Bis';
+$string['search_period_hint'] = 'Durchsucht werden Reservierungsname, Beschreibung und Ersteller/in im gewählten Zeitraum.';
+$string['allrooms'] = 'Alle Ressourcen';
+$string['alltypes'] = 'Alle Arten';

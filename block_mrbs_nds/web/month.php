@@ -142,7 +142,7 @@ if ($pview != 1) {
     echo '</div>'; // sidebar
 
     echo '<div class="mrbs-main">';
-    echo '<h3 class="mrbs-section-title mb-2">' . s($this_area_name) . ' â ' . s($this_room_name) . '</h3>';
+    echo '<h3 class="mrbs-section-title mb-2">' . s($this_area_name) . ' &ndash; ' . s($this_room_name) . '</h3>';
 }
 
 if ($debug_flag) {
